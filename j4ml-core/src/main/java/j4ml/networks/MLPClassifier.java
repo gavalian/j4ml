@@ -38,7 +38,7 @@ public class MLPClassifier {
     
     
     
-    public MLPClassifier(int nIn, int nClasses, int[] layers){
+    public MLPClassifier(int nIn, int[] layers, int nClasses){
         nInputs = nIn;
         outputClasses = nClasses;
         hiddenLayers = layers;
@@ -94,7 +94,8 @@ public class MLPClassifier {
         network.init();
         long start_time = System.currentTimeMillis();
         
-        System.out.println(dsTrain);
+        System.out.println(network.summary());
+        //System.out.println(dsTrain);
         for(int i = 0; i < epoch; i++){
             for(int iter = 0; iter < iterationPerEpoch; iter++){
                 long elapsed_time = System.currentTimeMillis() - start_time;
@@ -111,16 +112,16 @@ public class MLPClassifier {
             
             INDArray lables   = dsTest.getLabels();
             INDArray features = dsTest.getFeatures();
-            Evaluation eval = new Evaluation(2);
+            Evaluation eval = new Evaluation(outputClasses);
             long evalStartTime = System.currentTimeMillis();
             INDArray predicted = network.output(features,false);
             long evalEndTime   = System.currentTimeMillis();
         
             int columns = lables.columns();
             System.out.printf("ELAPSED TIME = %d msec\n",evalEndTime - evalStartTime);
-            for(int i = 0; i < columns; i++){
+            /*for(int i = 0; i < columns; i++){
                 System.out.printf("column %5d, size : %8d\n",i,lables.size(i));
-            }
+            }*/
             System.out.println(predicted.toString());
             
             eval.eval(lables, predicted);
