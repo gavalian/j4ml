@@ -5,6 +5,7 @@
  */
 package j4ml.readers;
 
+import java.util.List;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
@@ -42,7 +43,42 @@ public class LibSVMReader {
         LibSVMReader loader = new LibSVMReader();
         loader.isRegression = false;
         loader.numberOfClasses = nclasses;
+        loader.numberOfFeatures = nfeatures;
         return loader;
+    }
+    
+    public DataSet readClassification(List<String> data){
+        int nEntries = data.size();
+        INDArray  input = Nd4j.zeros(new int[]{ nEntries, numberOfFeatures } );
+        INDArray labels = Nd4j.zeros(new int[]{ nEntries, numberOfClasses } );
+        
+        int[] indexIn  = new int[2];
+        int[] indexOut = new int[2];
+        
+        for(int row = 0; row < nEntries; row++){
+            String[] tokens = data.get(row).split("\\s+");
+            
+            int labelClass = Integer.parseInt(tokens[0]);
+            indexOut[0] = row; indexOut[1] = labelClass;            
+            labels.putScalar(indexOut, 1.0);
+            
+            indexIn[0] = row;
+            for(int item = 1; item < tokens.length; item++){
+                String[] pair = tokens[item].split(":");
+                if(pair.length==2){
+                    int    index = Integer.parseInt(  pair[0]);
+                    double value = Double.parseDouble(pair[1]);
+                    indexIn[1] = (index-1);
+                    if(indexIn[1]>=this.numberOfFeatures||indexIn[1]<0){
+                        System.out.println("[libsvm::error] index " + indexIn[1] + " is out of range of [0,"
+                        + this.numberOfFeatures +"]");
+                    } else {
+                        input.putScalar(indexIn, value);
+                    }
+                }
+            }
+        }
+        return new DataSet(input,labels);
     }
     
     public DataSet readClassification(String filename){

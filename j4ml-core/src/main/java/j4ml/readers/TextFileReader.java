@@ -58,6 +58,19 @@ public class TextFileReader {
         return true;
     }
     
+    public List<String> readLines(int nlines){
+        List<String> nextLines = new ArrayList<String>();
+        try {
+            for(int k = 0; k < nlines; k++){
+                String line = br.readLine();
+                if(line!=null)  nextLines.add(line);                
+            }                 
+            } catch (IOException ex) {
+                Logger.getLogger(TextFileReader.class.getName()).log(Level.SEVERE, null, ex);
+            } 
+        return nextLines;
+    }
+    
     public boolean readNext(List<String> lines, String regEx){
         boolean stopReading = false;
         String  itemRegEx = regEx.replace("*", ".*");

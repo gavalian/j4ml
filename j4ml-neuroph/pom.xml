@@ -3,23 +3,19 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>j4ml</groupId>
-    <artifactId>j4ml-core</artifactId>
+    <artifactId>j4ml-neuroph</artifactId>
     <version>0.9-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <dependencies>
 
+      <!-- https://mvnrepository.com/artifact/com.github.neuroph/neuroph-core -->
       <dependency>
-        <groupId>org.nd4j</groupId>
-        <artifactId>nd4j-native-platform</artifactId>
-        <version>1.0.0-beta6</version>
+	<groupId>com.github.neuroph</groupId>
+	<artifactId>neuroph-core</artifactId>
+	<version>2.98</version>
       </dependency>
       
-      <dependency>
-        <groupId>org.deeplearning4j</groupId>
-        <artifactId>deeplearning4j-core</artifactId>
-        <version>1.0.0-beta6</version>
-      </dependency>
       
     </dependencies>
 
