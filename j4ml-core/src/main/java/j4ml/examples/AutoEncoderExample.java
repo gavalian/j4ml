@@ -79,15 +79,15 @@ public class AutoEncoderExample {
     }
     
     public static void main(String[] args){
-        DataSet dataset = AutoEncoderExample.readFile("sample/dc_noise_train.lsvm",250);
-        DataSet test    = AutoEncoderExample.readFile("sample/dc_noise_train.lsvm",250);
+        DataSet dataset = AutoEncoderExample.readFile("sample/dc_noise_train.lsvm",50);
+        DataSet test    = AutoEncoderExample.readFile("sample/dc_noise_train.lsvm",50);
         System.out.println(dataset);
         
         AutoEncoderExample.testLossFunction(dataset.getLabels(), dataset.getFeatures());
         
         DataCompare.compare(dataset.getFeatures(), dataset.getLabels());
-        AutoEncoder encoder = new AutoEncoder(112*36,new int[]{112*18, 128, 128/2,128/4});
-        encoder.train(dataset, 5);
+        AutoEncoder encoder = new AutoEncoder(112*36,new int[]{112*2, 112, 112*2});
+        encoder.train(dataset, 25);
         
         INDArray output = encoder.getNetwork().output(test.getFeatures(), false);
         System.out.println(test.getFeatures());

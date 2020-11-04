@@ -59,11 +59,12 @@ public class ChainDataExtractor {
     }
     
     public static void main(String[] args){
-        String filename = "/Users/gavalian/Work/DataSpace/ai/clustersonly/cl_out_clas_005038.evio.00105-00109.hipo";
+        //String filename = "/Users/gavalian/Work/DataSpace/ai/clustersonly/cl_out_clas_005038.evio.00105-00109.hipo";
+        String filename = "/Users/gavalian/Work/DataSpace/ai/clustersonly/test.hipo";
         ChainDataExtractor ce = new ChainDataExtractor(Arrays.asList(filename));
         DCRawDataExtractor ext = new DCRawDataExtractor("dc_raw_tdc.lsvm");
         ce.addExtractor(ext);
-        ce.setLimit(1000);
+        //ce.setLimit(1000);
         ce.process();
     }
     

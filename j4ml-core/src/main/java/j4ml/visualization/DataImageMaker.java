@@ -53,6 +53,7 @@ public class DataImageMaker {
             for(int x = 0; x < xDim; x++){
                 indx[1] = counter;
                 double value = array.getDouble(indx);
+                /*
                 if(value>0){
                     dataImage.setRGB(x, y, 
                             getColor(fullColor.getRed(),fullColor.getGreen(), fullColor.getBlue())
@@ -61,6 +62,17 @@ public class DataImageMaker {
                     dataImage.setRGB(x, y, 
                             getColor(emptyColor.getRed(),emptyColor.getGreen(), emptyColor.getBlue())
                     );
+                }*/
+                if(value>0){
+                    if(value>1.0) value = 1.0;
+                    int intensity = (int) (255*value);
+                    dataImage.setRGB(x, y, 
+                            getColor(intensity,intensity,intensity)
+                    );
+                } else {
+                   dataImage.setRGB(x, y, 
+                            getColor(emptyColor.getRed(),emptyColor.getGreen(), emptyColor.getBlue())
+                    ); 
                 }
                 counter++;
             }
@@ -84,6 +96,24 @@ public class DataImageMaker {
         
         dataImage = img;
     }
+    public static BufferedImage magnifyImage(BufferedImage image, int xmag, int ymag){
+        
+        int xDim = image.getWidth();
+        int yDim = image.getHeight();
+        BufferedImage img = new BufferedImage(xDim*xmag, yDim*ymag,
+                        BufferedImage.TYPE_INT_ARGB);
+        for(int x = 0; x < xDim; x++){
+            for(int y = 0; y < yDim; y++){
+                int color = image.getRGB(x, y);
+                for(int xm = x*xmag; xm < (x+1)*xmag; xm++){
+                    for(int ym = y*ymag; ym < (y+1)*ymag; ym++){
+                        img.setRGB(xm, ym, color);
+                    }
+                }
+            }
+        }
+        return img;
+    }
     
     public void save(String filename){        
         try {
@@ -97,5 +127,76 @@ public class DataImageMaker {
         int a = 255;
         int col = (a << 24) | (r << 16) | (g << 8) | b;
         return col;
+    }
+    public static int color(int r, int g, int b){
+        int a = 255;
+        int col = (a << 24) | (r << 16) | (g << 8) | b;
+        return col;
+    }
+    public static BufferedImage makeImage(double[] data, int x, int y){
+        BufferedImage dataImage =
+                new BufferedImage(x, y,
+                        BufferedImage.TYPE_INT_ARGB);
+        int xc = 0; int yc = 0;
+        for(int i = 0; i < data.length; i++){
+            int cv = (int) (255*data[i]);
+            int color = DataImageMaker.color(cv,cv,cv);
+            dataImage.setRGB(xc, yc, color);
+            xc++;
+            if(xc>=x){
+                xc = 0;
+                yc++;
+            }
+        }
+        return dataImage;
+    }
+    public static void saveImage(double[] data, int x, int y, String filename){
+        BufferedImage dataImage = DataImageMaker.makeImage(data, x, y);
+        try {
+            File outputfile = new File(filename);
+            ImageIO.write(dataImage, "png", outputfile);
+        } catch (IOException ex) {
+            Logger.getLogger(DataImageMaker.class.getName()).log(Level.SEVERE, null, ex);
+        }   
+    }
+    
+    public static void writeImage(BufferedImage image, double[] data, int xoffset, int yoffset, int x, int y){
+        int xc = 0; int yc = 0;
+        for(int i = 0; i < data.length; i++){
+            int cv = (int) (255*data[i]);
+            int color = DataImageMaker.color(cv,cv,cv);
+            image.setRGB(xoffset + xc, yoffset + yc, color);
+            xc++;
+            if(xc>=x){
+                xc = 0;
+                yc++;
+            }
+        }
+    }
+    
+    public static void saveImage(double[] data, int x, int y, String filename, int xmag, int ymag){
+        BufferedImage dataImage = DataImageMaker.makeImage(data, x, y);
+        BufferedImage  newImage = DataImageMaker.magnifyImage(dataImage,xmag,ymag);
+        try {
+            File outputfile = new File(filename);
+            ImageIO.write(newImage, "png", outputfile);
+        } catch (IOException ex) {
+            Logger.getLogger(DataImageMaker.class.getName()).log(Level.SEVERE, null, ex);
+        }   
+    }
+    
+    public static void saveImage(double[] input, double[] desired, double[] output, int x, int y , String filename){        
+        BufferedImage dataImage =
+                new BufferedImage(x*3, y,
+                        BufferedImage.TYPE_INT_ARGB);
+        DataImageMaker.writeImage(dataImage, input, 0, 0, x, y);
+        DataImageMaker.writeImage(dataImage, desired, x, 0, x, y);
+        DataImageMaker.writeImage(dataImage, output, 2*x, 0, x, y);
+        try {
+            File outputfile = new File(filename);
+            ImageIO.write(dataImage, "png", outputfile);
+        } catch (IOException ex) {
+            Logger.getLogger(DataImageMaker.class.getName()).log(Level.SEVERE, null, ex);
+        }  
     }
 }

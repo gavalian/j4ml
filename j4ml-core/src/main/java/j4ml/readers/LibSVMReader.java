@@ -163,7 +163,22 @@ public class LibSVMReader {
             
         return new DataSet(input,labels);
     }
-        
+    
+    public static double[] getDataRow(String row, int features){
+        double[] rowData = new double[features];
+        for(int i = 0; i < rowData.length; i++) rowData[i] = 0.0;
+        String[] tokens = row.split("\\s+");
+        for(int i = 0; i < tokens.length; i++){
+            if(tokens[i].contains(":")==true){
+                String[] pair = tokens[i].split(":");
+                int    index = Integer.parseInt(pair[0]);
+                double value = Double.parseDouble(pair[1]);
+                rowData[index-1] = value;
+            }
+        }
+        return rowData;
+    }
+    
     private int getFileLineCount(String filename){
         TextFileReader reader = new TextFileReader();
         reader.open(filename);

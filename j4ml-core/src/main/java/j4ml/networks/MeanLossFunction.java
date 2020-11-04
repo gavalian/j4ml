@@ -5,60 +5,80 @@
  */
 package j4ml.networks;
 
+import java.util.List;
+import org.nd4j.autodiff.samediff.SDVariable;
+import org.nd4j.common.primitives.Pair;
 import org.nd4j.linalg.activations.IActivation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.lossfunctions.ILossFunction;
-import org.nd4j.linalg.primitives.Pair;
+import org.nd4j.linalg.lossfunctions.impl.LossL2;
+
 
 /**
  *
  * @author gavalian
  */
-public class MeanLossFunction implements ILossFunction {
+public class MeanLossFunction extends LossL2 {
 
-    @Override
-    public double computeScore(INDArray labels, INDArray preOut, IActivation ia, INDArray mask, boolean bln) {
-        long dim1 = labels.size(0);
-        double mse = 0.0;
+    public MeanLossFunction() {
         
-        for(int i = 0; i < dim1; i++){
-            long dim2 = labels.size(1);
-            int[] index = new int[]{i,0};
-            int counter = 0;
-            for(int f = 0; f < dim2; f++){
-                index[1] = f;
-                double valueLabel = labels.getDouble(index);
-                double valuePre   = labels.getDouble(index);
-                if(valueLabel>0.0){
-                    counter++;
-                    mse += (valuePre-valueLabel)*(valuePre-valueLabel);
-                }
-
-            }
-        }
-        if(bln==true) mse /= dim1;
-        return mse;
     }
-
     
-    @Override
-    public INDArray computeScoreArray(INDArray inda, INDArray inda1, IActivation ia, INDArray inda2) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public MeanLossFunction(INDArray weights) {
+        super(weights);
+    }
+
+     
+   @Override
+    public double computeScore(INDArray labels, INDArray preOutput, IActivation activationFn, INDArray mask,
+                    boolean average) {
+
+        double score = super.computeScore(labels, preOutput, activationFn, mask, average);
+        //score /= (labels.size(1));
+        return score;
     }
 
     @Override
-    public INDArray computeGradient(INDArray inda, INDArray inda1, IActivation ia, INDArray inda2) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public INDArray computeScoreArray(INDArray labels, INDArray preOutput, IActivation activationFn, INDArray mask) {
+        INDArray scoreArr = super.computeScoreArray(labels, preOutput, activationFn, mask);
+        
+        //return scoreArr.divi(labels.size(1));
+        return scoreArr;
     }
 
     @Override
-    public Pair<Double, INDArray> computeGradientAndScore(INDArray inda, INDArray inda1, IActivation ia, INDArray inda2, boolean bln) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public INDArray computeGradient(INDArray labels, INDArray preOutput, IActivation activationFn, INDArray mask) {
+        INDArray gradients = super.computeGradient(labels, preOutput, activationFn, mask);
+        //return gradients.divi(labels.size(1));
+        return gradients;
     }
-
+    
+    public double getNDF(INDArray labels, int n){
+        long size = labels.size(1);
+        int count = 0;
+        for(int i = 0; i < size; i++){
+            double value = labels.getDouble(new int[]{n,i});
+            if(value>0.5) count++;
+        }
+        return (double) count;
+    }
+    
+    /**
+     * The opName of this function
+     *
+     * @return
+     */
     @Override
     public String name() {
-        return "MSEPOS";
+        return toString();
+    }
+
+
+    @Override
+    public String toString() {
+        if (weights == null)
+            return "LossGLE()";
+        return "LossGLE(weights=" + weights + ")";
     }
     
 }

@@ -32,7 +32,7 @@ public class DataExtractor {
         
     }
     
-    protected void output(String filename){
+    protected final void output(String filename){
         this.outputFile = filename;
     }
     

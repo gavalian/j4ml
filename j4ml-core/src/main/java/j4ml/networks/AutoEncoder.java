@@ -29,7 +29,11 @@ import org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction;
  */
 public class AutoEncoder {
     private MultiLayerNetwork network = null;
-    private int   iterationPerEpoch = 100;
+    private int   iterationPerEpoch = 40;
+    
+    private Activation activation = Activation.TANH;
+    private double     dropOut    = 0.0;
+    
     public AutoEncoder(int inputSize, int[] hiddenLayers){
         network = createNetwork(inputSize, hiddenLayers);
         network.init();
@@ -43,11 +47,9 @@ public class AutoEncoder {
                         .weightInit(WeightInit.XAVIER)
                         //.updater(new AdaGrad(0.15))
                         //.updater(new Nesterovs(0.1, 0.9))
-                        .updater(new Adam(0.1))
-                        //.activation(Activation.RELU)
-                        .activation(Activation.TANH)
-                        //.l2(0.0001)
-                        //.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT);
+                        .updater(new Adam(0.01))
+                        .activation(activation)
+                        .l2(0.0001)
                         .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT);
                         //.l2(0.0001);
         
@@ -55,34 +57,40 @@ public class AutoEncoder {
         
         int counter = 0;
         listBuilder.layer(counter, new DenseLayer.Builder().nIn(inputSize).nOut(hiddenLayers[0])
-                //.activation(Activation.RELU)
                 .weightInit(WeightInit.XAVIER)
-                //.dropOut(0.5)
+                .activation(activation)
+                .dropOut(dropOut)
                 .build());
         
         counter++;
         
         for(int i = 1 ; i < hiddenLayers.length; i++){
-            listBuilder.layer(counter, new DenseLayer.Builder().nIn(hiddenLayers[i-1]).nOut(hiddenLayers[i])
+            listBuilder.layer(counter, new DenseLayer.Builder().nIn(hiddenLayers[i-1])
+                    .nOut(hiddenLayers[i]).weightInit(WeightInit.XAVIER)
+                    .activation(activation)
+                    .dropOut(dropOut)
                     //.activation(Activation.RELU)
-                    .dropOut(0.5)
+                    //.dropOut(0.5)
                     .build());
             counter++;
         }
         
         for(int i = hiddenLayers.length-2; i >= 0 ; i--){
-            listBuilder.layer(counter, new DenseLayer.Builder().nIn(hiddenLayers[i+1]).nOut(hiddenLayers[i])
+            listBuilder.layer(counter, new DenseLayer.Builder().nIn(hiddenLayers[i+1])
+                    .nOut(hiddenLayers[i]).weightInit(WeightInit.XAVIER)
+                    .activation(activation)
+                    .dropOut(dropOut)
                     //.activation(Activation.RELU)
-                    .dropOut(0.5)
                     .build());
             counter++;
         }
         listBuilder.layer(counter, new OutputLayer.Builder().nIn(hiddenLayers[0]).nOut(inputSize)
+                .weightInit(WeightInit.XAVIER)
                 .activation(Activation.IDENTITY)
-                .lossFunction(LossFunctions.LossFunction.MSE).dropOut(0.5)
-                //.lossFunction(new MeanLossFunction())
-                
-                .build());
+                .lossFunction(LossFunctions.LossFunction.MSE)
+                //.lossFunction(LossFunction.RECONSTRUCTION_CROSSENTROPY)
+                //.lossFunction(new MeanLossFunction())                
+                .build());//.backpropType(BackpropType.Standard);
         
         
         /*listBuilder.layer(0, new DenseLayer.Builder().nIn(50).nOut(25)
@@ -93,12 +101,14 @@ public class AutoEncoder {
         return listBuilder.build();
     }
     
+    public void setMaxIterations(int iter){ this.iterationPerEpoch = iter;}
+    
     public final MultiLayerNetwork createNetwork(int inputSize, int[] hiddenLayers){
         MultiLayerConfiguration config = createConfiguration(inputSize, hiddenLayers);
         //System.out.println(config.toJson());
-        MultiLayerNetwork network = new MultiLayerNetwork(config);
+        MultiLayerNetwork networkLocal = new MultiLayerNetwork(config);
         
-        return network;
+        return networkLocal;
     }
     
     public MultiLayerConfiguration createConfiguration(){
@@ -133,17 +143,23 @@ public class AutoEncoder {
     public final MultiLayerNetwork getNetwork(){return network;}
     
     public void train(DataSet trainingSet, int nEpochs){
+        
          System.out.println(network.summary());
         //System.out.println(dsTrain);
         for(int i = 0; i < nEpochs; i++){
+            long start_time = System.currentTimeMillis();
             for(int iter = 0; iter < iterationPerEpoch; iter++){
                 //long elapsed_time = System.currentTimeMillis() - start_time;
                 network.fit(trainingSet);
                 //System.out.printf("time - %5d >>> score = %16.10f\r",elapsed_time,network.score());
                 //System.err.println("");
             }
-            System.out.printf("iter # %8d , score = %16.10f\n",i+1,network.score());
+            long end_time = System.currentTimeMillis();
+            double elapsed_seconds = ((double) (end_time-start_time))/1000.0;
+            System.out.printf("iter # %8d/%d , score = %16.10f -- %8.3f seconds\n",
+                    i+1,nEpochs,network.score(),elapsed_seconds);
         }
+        
     }
     
     public static void main(String[] args){

@@ -40,9 +40,11 @@ public class DCRawDataExtractor extends DataExtractor {
             int sector = bank.getInt("sector", row);
             if(sector==1){
                 int layer = bank.getInt("layer", row);
-                int component = bank.getInt("component", row);
-                int index = 1 + (layer-1)*112 + (component-1);
-                tdcMap.put(index, 1.0);
+                //if(layer>0&&layer<=6){
+                    int component = bank.getInt("component", row);
+                    int index = 1 + (layer-1)*112 + (component-1);
+                    tdcMap.put(index, 1.0);
+                //}
             }
         }
     }
@@ -56,27 +58,30 @@ public class DCRawDataExtractor extends DataExtractor {
                     int index     = bank.getInt(i+4, row) - 1;
                     if(index>=0){
                         int layer     = tdc.getInt("layer",index);
-                        int component = tdc.getInt("component", index);
-                        int key = 1 + (layer-1)*112 + (component-1);
-                        tdcMap.put(key, 1.0);
+                        //if(layer>0&&layer<=6){
+                            int component = tdc.getInt("component", index);
+                            int key = 1 + (layer-1)*112 + (component-1);
+                            tdcMap.put(key, 1.0);
+                        //}
                     }
                 }
             }
         }
     }
     
+    @Override
     public void process(Event event){        
         event.read(rawTDC);
         event.read(clustersBank);
                         
         tdcMap.clear();
         clustersMap(clustersBank,rawTDC);
-        if(tdcMap.size()<48) return;
+        if(tdcMap.size()<15) return;
         String outputMapClusters = this.mapToValues(tdcMap);
         tdcMap.clear();
         rawMap(rawTDC);                
         String outputMapRaw = this.mapToValues(tdcMap);
-                
+        
         this.outputLines.clear();
         outputLines.add("1 " + outputMapClusters);
         outputLines.add("0 " + outputMapRaw);
