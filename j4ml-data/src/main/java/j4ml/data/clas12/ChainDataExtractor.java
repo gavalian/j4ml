@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.jlab.jnp.hipo4.data.Event;
 import org.jlab.jnp.hipo4.io.HipoChain;
+import org.jlab.jnp.utils.benchmark.ProgressPrintout;
 
 /**
  *
@@ -41,9 +42,12 @@ public class ChainDataExtractor {
             ext.init(chain);
         }
         
+        ProgressPrintout progress = new ProgressPrintout();
+        
         Event event = new Event();
         int counter = 0;
         while(chain.hasNext()==true){
+            progress.updateStatus();
             chain.nextEvent(event);
             for(DataExtractor ext : extractors){
                 ext.process(event);
@@ -62,6 +66,7 @@ public class ChainDataExtractor {
         //String filename = "/Users/gavalian/Work/DataSpace/ai/clustersonly/cl_out_clas_005038.evio.00105-00109.hipo";
         String filename = "/Users/gavalian/Work/DataSpace/ai/clustersonly/test.hipo";
         ChainDataExtractor ce = new ChainDataExtractor(Arrays.asList(filename));
+        
         DCRawDataExtractor ext = new DCRawDataExtractor("dc_raw_tdc.lsvm");
         ce.addExtractor(ext);
         //ce.setLimit(1000);

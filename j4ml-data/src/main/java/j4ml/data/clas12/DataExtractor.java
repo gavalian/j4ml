@@ -11,12 +11,14 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jlab.jnp.hipo4.data.Event;
 import org.jlab.jnp.hipo4.io.HipoChain;
+import org.jlab.jnp.readers.TextFileWriter;
 
 /**
  *
@@ -28,12 +30,24 @@ public class DataExtractor {
     protected List<String> outputLines = new ArrayList<String>();
     private BufferedWriter writer = null;
     
+    private Map<Integer, TextFileWriter>  channels = new HashMap<>();
+    
     public void init(HipoChain reader){
         
     }
     
     protected final void output(String filename){
         this.outputFile = filename;
+    }
+    
+    public void openChannel(int channel, String filename){
+        TextFileWriter wc = new TextFileWriter();
+        wc.open(filename);
+        channels.put(channel, wc);
+    }
+    
+    public void writeChannel(int channel, String line){
+        channels.get(channel).writeString(line);
     }
     
     protected void write(){     
@@ -44,8 +58,7 @@ public class DataExtractor {
             } catch (IOException ex) {
                 Logger.getLogger(DataExtractor.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
-        
+        }        
     }
     
     public String mapToValues(Map<Integer,Double> map){
@@ -74,6 +87,11 @@ public class DataExtractor {
     }
     
     public void close(){
+        
+        for(Map.Entry<Integer,TextFileWriter> entry : channels.entrySet()){
+            entry.getValue().close();
+        }
+        
         if(writer != null){
             try {
                 writer.close();

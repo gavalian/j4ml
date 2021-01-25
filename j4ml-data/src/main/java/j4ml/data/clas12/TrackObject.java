@@ -7,7 +7,9 @@ package j4ml.data.clas12;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.jlab.jnp.hipo4.data.Bank;
 import org.jlab.jnp.hipo4.data.Event;
 import org.jlab.jnp.hipo4.io.HipoChain;
@@ -51,6 +53,43 @@ public class TrackObject {
        return list;
    }
    
+   public List<Integer>  getTracksList(int sector){
+       int ntracks = trackBank.getRows();
+       List<Integer> index = new ArrayList<Integer>();
+       for(int i = 0; i < ntracks; i++){
+           int sec = trackBank.getInt("sector", i);
+           if(sec == sector){
+               double chi2 = trackBank.getFloat("chi2", i);
+               double vz   = trackBank.getFloat("Vtx0_z", i);
+               if(chi2<400.0&&vz>-25&&vz<5.0){
+                   int cid1 = trackBank.getInt("Cluster1_ID",i);
+                   int cid2 = trackBank.getInt("Cluster2_ID",i);
+                   int cid3 = trackBank.getInt("Cluster3_ID",i);
+                   int cid4 = trackBank.getInt("Cluster4_ID",i);
+                   int cid5 = trackBank.getInt("Cluster5_ID",i);
+                   int cid6 = trackBank.getInt("Cluster6_ID",i);
+                   if(cid1>0&&cid2>0&&cid3>0&&cid4>0&&cid5>0&&cid6>0){
+                       index.add(i);
+                   }
+               }
+           }
+       }
+       return index;
+   }
+   
+   public List<Integer>  getTrackClusters(int index){
+       
+       int cid1 = trackBank.getInt("Cluster1_ID",index);
+       int cid2 = trackBank.getInt("Cluster2_ID",index);
+       int cid3 = trackBank.getInt("Cluster3_ID",index);
+       int cid4 = trackBank.getInt("Cluster4_ID",index);
+       int cid5 = trackBank.getInt("Cluster5_ID",index);
+       int cid6 = trackBank.getInt("Cluster6_ID",index);
+       List<Integer> list = new ArrayList<Integer>();
+       list.addAll(Arrays.asList(cid1,cid2,cid3,cid4,cid5,cid6));
+       return list;
+   }
+   
    public List<Integer>  trackClustersForSector(int sector){
        int ntracks = trackBank.getRows();
        List<Integer> list = new ArrayList<Integer>();
@@ -67,7 +106,7 @@ public class TrackObject {
                    int cid5 = trackBank.getInt("Cluster5_ID",i);
                    int cid6 = trackBank.getInt("Cluster6_ID",i);
                    if(cid1>0&&cid2>0&&cid3>0&&cid4>0&&cid5>0&&cid6>0){
-                       list.addAll(Arrays.asList(cid1,cid2,cid3,cid4,cid5,cid5));
+                       list.addAll(Arrays.asList(cid1,cid2,cid3,cid4,cid5,cid6));
                    }
                }
            }
@@ -90,7 +129,10 @@ public class TrackObject {
    
    public List<WireHit>  getWireHits(List<Integer> clusterList){
        int nrows = clusterBank.getRows();
-       List<WireHit> list = new ArrayList<WireHit>();
+       
+       Map<Integer,WireHit> wireMap = new HashMap<>();
+       
+       
        for(int i = 0; i < nrows; i++){
            int id = clusterBank.getInt("id", i);
            //System.out.println(" id = " + id + "  contains = " + );
@@ -99,24 +141,45 @@ public class TrackObject {
                    int index = clusterBank.getInt("Hit"+k+"_ID",i);
                    if(index>=0){
                        WireHit hit = getWireHit(index-1);
-                       list.add(hit);
+                       //list.add(hit);
+                       wireMap.put(hit.getHash(), hit);
                    }
                }
            }
            
        }
+       List<WireHit> list = new ArrayList<WireHit>();
+       for(Map.Entry<Integer,WireHit> entry : wireMap.entrySet()){
+           list.add(entry.getValue());
+       }
        return list;
    }
    
-   public static class WireHit {
+   public static class WireHit implements Comparable<WireHit> {
+       
        int sector = 0;
        int layer  = 0;
        int wire   = 0;
        public WireHit(int __s, int __l, int __c){
            sector = __s; layer = __l; wire = __c;
        }
+       
+       public int getLayer(){return layer;}
+       public int getWire(){return wire;}
+       
+       public int getHash(){
+           return (wire-1)+(layer-1)*112;
+       }
+       
        public String idString(){
            return String.format("%d:1.0", (wire-1)+(layer-1)*112);
        }
+
+        @Override
+        public int compareTo(WireHit o) {
+            Integer lw = (wire-1)+(layer-1)*112;
+            Integer gw = (o.wire-1)+(o.layer-1)*112;
+            return lw.compareTo(gw);
+        }
    }
 }

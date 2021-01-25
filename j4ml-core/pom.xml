@@ -20,7 +20,11 @@
         <artifactId>deeplearning4j-core</artifactId>
         <version>1.0.0-beta7</version>
       </dependency>
-      
+      <dependency>
+        <groupId>j4ml</groupId>
+        <artifactId>j4ml-utils</artifactId>
+        <version>0.9-SNAPSHOT</version>
+      </dependency>
     </dependencies>
 
     <repositories>
