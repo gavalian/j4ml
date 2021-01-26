@@ -200,7 +200,7 @@ public class TrackExtraction extends DataExtractor {
         ChainDataExtractor ce = new ChainDataExtractor(Arrays.asList(filename));
         TrackExtraction ext = new TrackExtraction("driftchamber_tracks.lsvm");
         ce.addExtractor(ext);
-        //ce.setLimit(1000);
+        ce.setLimit(1000);
         ce.process();
     }
 }

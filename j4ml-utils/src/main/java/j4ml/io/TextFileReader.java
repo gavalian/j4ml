@@ -145,6 +145,7 @@ public class TextFileReader {
         return array;
     }
     
+    
     public double[] getAsDoubleArray(){
         double[] array = new double[entryTokens.size()];
         for(int i =0; i < array.length; i++){

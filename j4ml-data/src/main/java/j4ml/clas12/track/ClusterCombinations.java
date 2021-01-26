@@ -23,7 +23,7 @@ public class ClusterCombinations {
     }
     
     public ClusterCombinations(){
-        allocate(25000);
+        allocate(35000);
         reset();
     }
     
@@ -188,6 +188,10 @@ public class ClusterCombinations {
     
     
     public final void add(int[] ids, double[] means){
+        if(getSize()>34000){
+            System.out.println("too many combinations......");
+            return;
+        }
         if(ids.length!=6||means.length!=6){
             System.out.println("cluster-combinations: error: adding failed");
         } else {

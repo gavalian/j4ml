@@ -27,6 +27,7 @@ public class TrackObject {
     private Bank   trackBank  = null;
     private Bank   clusterBank = null;
     private Bank   tdcBank     = null;
+    private Map<Integer,Integer> clustersMap = new HashMap<>();
     
    public void init(HipoChain chain){
        trackBank   = new Bank(chain.getSchemaFactory().getSchema(trackBankName));
@@ -38,6 +39,11 @@ public class TrackObject {
        event.read(trackBank);
        event.read(clusterBank);
        event.read(tdcBank);
+       clustersMap.clear();
+       for(int i = 0; i < clusterBank.getRows(); i++){
+           int id = clusterBank.getInt("id", i);
+           clustersMap.put(id, i);
+       }
    }
    
    public List<Integer>  clustersForSector(int sector){
@@ -51,6 +57,39 @@ public class TrackObject {
            }
        }
        return list;
+   }
+   
+   public String getTrackDescriptionString(int index){
+       StringBuilder str = new StringBuilder();
+       str.append(String.format("%d,",trackBank.getInt("q", index)));
+       str.append(String.format("%.4f,",trackBank.getFloat("chi2", index)/trackBank.getInt("ndf", index)));
+       //str.append(String.format("%d,",trackBank.getInt("ndf", index)));
+       double px = trackBank.getFloat("p0_x", index);
+       double py = trackBank.getFloat("p0_y", index);
+       double pz = trackBank.getFloat("p0_z", index);
+       str.append(String.format("%.4f,",Math.sqrt(px*px+py*py+pz*pz)));
+       str.append(String.format("%.4f,",Math.acos(pz/Math.sqrt(px*px+py*py+pz*pz))));
+       str.append(String.format("%.4f,",Math.atan2(px,py)));
+       str.append(String.format("%.4f",trackBank.getFloat("Vtx0_z", index)));
+       
+       return str.toString();
+   }
+   
+   public String getTrackClustersString(int index){
+       List<Integer> list = this.getTrackClusters(index);
+       StringBuilder str = new StringBuilder();
+       for(int i = 0; i < 6; i++){
+           int row = clustersMap.get(list.get(i));
+           double mean = clusterBank.getFloat("avgWire", row);
+           str.append(String.format("%.4f,", mean));
+       }
+       for(int i = 0; i < 6; i++){
+           int row = clustersMap.get(list.get(i));
+           double slope = clusterBank.getFloat("fitSlope", row);
+           str.append(String.format("%.4f,", slope));
+       }
+       str.append("0");
+       return str.toString();
    }
    
    public List<Integer>  getTracksList(int sector){
