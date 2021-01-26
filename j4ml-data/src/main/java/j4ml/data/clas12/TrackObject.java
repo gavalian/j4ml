@@ -70,7 +70,7 @@ public class TrackObject {
        double pz = trackBank.getFloat("p0_z", index);
        str.append(String.format("%.4f,",Math.sqrt(px*px+py*py+pz*pz)));
        str.append(String.format("%.4f,",Math.acos(pz/Math.sqrt(px*px+py*py+pz*pz))));
-       str.append(String.format("%.4f,",Math.atan2(px,py)));
+       str.append(String.format("%.4f,",Math.atan2(py,px)));
        str.append(String.format("%.4f",trackBank.getFloat("Vtx0_z", index)));
        
        return str.toString();
@@ -101,7 +101,7 @@ public class TrackObject {
            if(sec == sector){
                double chi2 = trackBank.getFloat("chi2", i);
                double vz   = trackBank.getFloat("Vtx0_z", i);
-               if(chi2<400.0&&vz>-25&&vz<5.0){
+               //if(chi2<400.0&&vz>-25&&vz<5.0){
                    int cid1 = trackBank.getInt("Cluster1_ID",i);
                    int cid2 = trackBank.getInt("Cluster2_ID",i);
                    int cid3 = trackBank.getInt("Cluster3_ID",i);
@@ -111,7 +111,7 @@ public class TrackObject {
                    if(cid1>0&&cid2>0&&cid3>0&&cid4>0&&cid5>0&&cid6>0){
                        index.add(i);
                    }
-               }
+               //}
            }
        }
        return index;
