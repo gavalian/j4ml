@@ -23,7 +23,7 @@ public class ClusterCombinations {
     }
     
     public ClusterCombinations(){
-        allocate(35000);
+        allocate(450000);
         reset();
     }
     
@@ -188,7 +188,7 @@ public class ClusterCombinations {
     
     
     public final void add(int[] ids, double[] means){
-        if(getSize()>34000){
+        if(getSize()>440000){
             System.out.println("too many combinations......");
             return;
         }

@@ -72,7 +72,7 @@ public class Clas12TrackClassifier {
         resolvedTracks.reset();
         
         for(int sector = 1; sector <=6 ; sector++){
-            store.reset();            
+            store.reset();
             for(int i = 0; i < nrows; i++){
                 int sec = bank.getInt("sector", i);
                 int id     = bank.getInt("id", i);
@@ -82,6 +82,8 @@ public class Clas12TrackClassifier {
                     store.add(superlayer-1, id, wire);
                 }
             }
+            comb.reset();
+            comb5.reset();
             
             store.getCombinationsFull(comb);
             store.getCombinations(comb5);

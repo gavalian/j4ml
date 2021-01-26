@@ -62,6 +62,7 @@ public class TrackObject {
    public String getTrackDescriptionString(int index){
        StringBuilder str = new StringBuilder();
        str.append(String.format("%d,",trackBank.getInt("q", index)));
+       str.append(String.format("%d,",trackBank.getInt("sector", index)));
        str.append(String.format("%.4f,",trackBank.getFloat("chi2", index)/trackBank.getInt("ndf", index)));
        //str.append(String.format("%d,",trackBank.getInt("ndf", index)));
        double px = trackBank.getFloat("p0_x", index);

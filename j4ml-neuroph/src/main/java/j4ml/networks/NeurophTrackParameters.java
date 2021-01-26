@@ -74,7 +74,7 @@ public class NeurophTrackParameters {
                              -Math.PI,Math.PI,
                              -30.0,5.0},  ",");
                  double[] params = TextUtils.getAsDoubleArray(lines.get(0), new int[]{1,2,3,4,5}, ",");
-                 if(params[0]<8.0&&params[4]>-30&&params[4]<5.0){
+                 if(params[0]<8.0&&params[1]<3.5&&params[4]>-30&&params[4]<5.0){
                      if(counterImport<max) {
                          dataset.add(new DataSetRow(input,output));                     
                          counterImport++;
@@ -110,7 +110,7 @@ public class NeurophTrackParameters {
          
          
          network.init(new int[]{6,24,24,4});
-         network.train(split[0], 400);
+         network.train(split[0], 50);
          network.evaluate(split[1]);
      }
 }

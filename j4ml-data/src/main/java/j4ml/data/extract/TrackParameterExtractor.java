@@ -9,6 +9,7 @@ import j4ml.data.clas12.ChainDataExtractor;
 import j4ml.data.clas12.DataExtractor;
 import j4ml.data.clas12.TrackExtraction;
 import j4ml.data.clas12.TrackObject;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.jlab.jnp.hipo4.data.Bank;
@@ -41,7 +42,7 @@ public class TrackParameterExtractor extends DataExtractor {
     public void process(Event event){
         
         
-        for(int s = 1; s <= 1; s++){                 
+        for(int s = 1; s <= 6; s++){                 
             track.read(event);
             List<Integer> tracksList = track.getTracksList(s);
             for(Integer trkIndex : tracksList){
@@ -53,8 +54,15 @@ public class TrackParameterExtractor extends DataExtractor {
     }
     
     public static void main(String[] args){
-        String filename = "/Users/gavalian/Work/DataSpace/raw/out_ai_005038.00165-00169.hipo";
-        ChainDataExtractor ce = new ChainDataExtractor(Arrays.asList(filename));
+        List<String> inputFiles = new ArrayList<>();
+        
+        if(args.length>0){
+            for(int i = 0; i < args.length; i++) inputFiles.add(args[i]);
+        }
+        
+        //String filename = "/Users/gavalian/Work/DataSpace/raw/out_ai_005038.00165-00169.hipo";
+        //ChainDataExtractor ce = new ChainDataExtractor(Arrays.asList(filename));
+        ChainDataExtractor ce = new ChainDataExtractor(inputFiles);
         TrackParameterExtractor ext = new TrackParameterExtractor("track_parameters.csv");
         ce.addExtractor(ext);
         //ce.setLimit(1000);
