@@ -45,8 +45,10 @@ public class Clas12TrackClassifier {
     }
      
     public Clas12TrackClassifier(String file, String fixerFile){
+        System.out.println("===> reading    classifier file : " + file);
          neurophClassifier  = new NeurophTrackClassifier();
          neurophClassifier.load(file);
+         System.out.println("===> reading auto-encoder file : " + fixerFile);
          neurophFixer = new NeurophTrackFixer();
          neurophFixer.load(fixerFile);
     }
@@ -62,6 +64,11 @@ public class Clas12TrackClassifier {
     
     public ClusterCombinations getTracks(){return resolvedTracks;}
     
+    
+    
+    public void classify(){
+        
+    }
     
     public void processBank(Bank bank){      
         
@@ -183,7 +190,7 @@ public class Clas12TrackClassifier {
         */
     }
     
-    public void evaluate(ClusterCombinations comb){
+    public synchronized void evaluate(ClusterCombinations comb){
          int nsize = comb.getSize();
             
             for(int i = 0; i < nsize; i++){
@@ -196,7 +203,7 @@ public class Clas12TrackClassifier {
             }
     }
     
-    public void evaluate5(ClusterCombinations comb){
+    public synchronized void evaluate5(ClusterCombinations comb){
         
         int nsize = comb.getSize();
         for(int i = 0; i < nsize; i++){
