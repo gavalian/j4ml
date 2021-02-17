@@ -21,13 +21,17 @@ import org.neuroph.nnet.learning.MomentumBackpropagation;
 public class NeurophTrackParameters {
      private NeuralNetwork            network = null;
      private String  networkTitle = "neuroph";
-         private int            printoutFrequency = 1;
-         
+     private int            printoutFrequency = 1;
+
      public final void init(int[] layersSize){
          network = new MultiLayerPerceptron(layersSize);
         StringBuilder str = new StringBuilder();
         for(int i = 0; i < layersSize.length; i++) str.append(String.format("%dx", layersSize[i]));
         networkTitle = str.toString();
+     }
+     
+     public void save(String filename){
+         network.save(filename);
      }
      
      protected double toSeconds(long then, long now){
@@ -67,14 +71,18 @@ public class NeurophTrackParameters {
              if(lines.size()<1) break;
              counter++;
              if(lines.get(0).startsWith("1,")==true){
-                 double[]  input = TextUtils.getAsDoubleArray(lines.get(0), new int[]{6,7,8,9,10,11}, 
-                         new double[]{0,112,0,112,0,112,0,112,0,112,0,112}, ",");
-                 double[] output = TextUtils.getAsDoubleArray(lines.get(0), new int[]{2,3,4,5}, 
-                         new double[] {0.0,3.0,0.0,Math.PI/2.0,
+                 double[]  input = TextUtils.getAsDoubleArray(lines.get(0), new int[]{7,8,9,10,11,12}, 
+                         new double[]{0,112,0,112,0,112,0,112,0,112,0,112
+                         }, 
+                         ",");
+                 double[] output = TextUtils.getAsDoubleArray(lines.get(0), new int[]{3,4,5,6}, 
+                         new double[] {0.0,10.0, 0.0,Math.PI/2.0,
                              -Math.PI,Math.PI,
-                             -20.0,30.0},  ",");
-                 double[] params = TextUtils.getAsDoubleArray(lines.get(0), new int[]{1,2,3,4,5}, ",");
-                 if(params[0]<8.0&&params[1]<3.0&&params[4]>-20&&params[4]<30.0){
+                             -20,30
+                         },  ",");
+                 double[] params = TextUtils.getAsDoubleArray(lines.get(0), new int[]{1,2,3,4,5,6}, ",");
+                 if(params[0]>0.5&&params[0]<1.5&&
+                         params[1]<8.0&&params[5]>-20&&params[5]<30.0){
                      if(counterImport<max) {
                          dataset.add(new DataSetRow(input,output));                     
                          counterImport++;
@@ -103,14 +111,16 @@ public class NeurophTrackParameters {
      public static void main(String[] args){
          
          NeurophTrackParameters network = new NeurophTrackParameters();
-         DataSet training = network.readDataSet("track_parameters_full.csv",30000);
+         DataSet training = network.readDataSet("track_parameters_full.csv.1",1000000);
          
          training.shuffle();
-         DataSet[] split = training.split(0.6,0.4);
+         DataSet[] split = training.split(0.9,0.1);
          
          
-         network.init(new int[]{6,24,24,4});
-         network.train(split[0], 50);
+         network.init(new int[]{6,12,12,12,4});
+         network.train(split[0], 120);
          network.evaluate(split[1]);
+         
+         network.save("trackParameters.nnet");
      }
 }

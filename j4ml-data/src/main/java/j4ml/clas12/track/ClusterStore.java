@@ -110,7 +110,20 @@ public class ClusterStore {
                                     
                                     ids[missing[i]] = 0;
                                     means[missing[i]] = 0.0;
-                                    comb.add(ids, means);
+                                    if((i==0||i==1)&&Math.abs(means[2]-means[3])<25.0&&
+                                            Math.abs(means[4]-means[5])<25.0){
+                                        comb.add(ids, means);
+                                    }
+                                    
+                                    if((i==2||i==3)&&Math.abs(means[0]-means[1])<25.0&&
+                                            Math.abs(means[4]-means[5])<25.0){
+                                        comb.add(ids, means);
+                                    }
+                                    if((i==4||i==5)&&Math.abs(means[0]-means[1])<25.0&&
+                                            Math.abs(means[2]-means[3])<25.0){
+                                        comb.add(ids, means);
+                                    }
+                                    
                                 }
                             }
                         }

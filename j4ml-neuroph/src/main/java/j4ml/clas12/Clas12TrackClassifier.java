@@ -109,7 +109,12 @@ public class Clas12TrackClassifier {
             this.evaluate(comb);
             this.evaluate5(comb5);
             
+            //System.out.println(comb);
+            
             comb.analyze();
+            
+            //System.out.println(comb);
+            
             int nsize = comb.getSize();
             
             //System.out.println("THEN \n" + comb5);
@@ -134,7 +139,9 @@ public class Clas12TrackClassifier {
                 }
             }
             //System.out.println("NOW \n" + comb5);
+            //System.out.println(comb5);
             comb5.analyze();
+            //System.out.println(comb5);
             
             //System.out.println(comb5);
             int nsize5 = comb5.getSize();
@@ -295,13 +302,20 @@ public class Clas12TrackClassifier {
         reader.open(filename);
         Event event = new Event();
         Bank  cBank = reader.getBank("HitBasedTrkg::HBClusters");
-        Bank  tBank = reader.getBank("HitBasedTrkg::HBTracks");
+        Bank  tBank = reader.getBank("TimeBasedTrkg::TBTracks");
+        Bank  aBank = reader.getBank("TimeBasedTrkg::AITracks");
+        Bank  rBank = reader.getBank("RUN::config");
+        
         reader.getEvent(event, eventNumber);
         
         event.read(cBank);
         event.read(tBank);
-        cBank.show();
+        event.read(rBank);
+        //cBank.show();
+        rBank.show();
+        aBank.show();
         tBank.show();
+
         System.out.println("BANK SIZE = " + cBank.getRows());
         
         //classifier.processBankPartial(cBank);

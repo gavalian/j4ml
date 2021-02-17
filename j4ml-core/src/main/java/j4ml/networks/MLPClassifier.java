@@ -65,7 +65,9 @@ public class MLPClassifier {
     }
     
     public MultiLayerConfiguration createConfiguration(){
+        
         MultiLayerConfiguration conf;
+        
         NeuralNetConfiguration.Builder builder
                 = new NeuralNetConfiguration.Builder()
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
@@ -84,7 +86,7 @@ public class MLPClassifier {
         listBuilder.layer(new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                         .activation(Activation.SOFTMAX)
                         .nIn(hiddenLayers[hiddenLayers.length - 1]).nOut(outputClasses).build());
-
+        
         return listBuilder.backpropType(BackpropType.Standard).build();
     }
     

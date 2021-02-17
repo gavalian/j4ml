@@ -10,6 +10,7 @@ import org.neuroph.core.data.DataSet;
 import org.neuroph.nnet.MultiLayerPerceptron;
 import org.neuroph.nnet.learning.LMS;
 import org.neuroph.nnet.learning.MomentumBackpropagation;
+import org.neuroph.util.TransferFunctionType;
 
 /**
  *
@@ -26,7 +27,7 @@ public class NeurophMLPClassifier {
     }
     
     public void init(int[] layersSize){
-        network = new MultiLayerPerceptron(layersSize);
+        network = new MultiLayerPerceptron(TransferFunctionType.RECTIFIED,layersSize);
         StringBuilder str = new StringBuilder();
         for(int i = 0; i < layersSize.length; i++) str.append(String.format("%dx", layersSize[i]));
         networkTitle = str.toString();
