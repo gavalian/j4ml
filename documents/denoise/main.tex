@@ -1,8 +1,7 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 \usepackage[margin=1.0in]{geometry}
-
-\usepackage{natbib}
+%\usepackage{natbib}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage[parfill]{parskip}
@@ -16,112 +15,30 @@ Polykarpos Thomadakis (ODU), Angelos Angelopoulos (ODU)}
 \setlength{\parindent}{0pt}
 
 
-
 \begin{document}
 
 \maketitle
 
-\section{Introduction}
 
-\indent
+%Data ~\cite{clas12-nim} from here:
 
-The CLAS12 \cite{Burkert:2020akg} detector is built around a six-coil toroidal magnet which divides the active detection into six azimuthal regions, called "sectors". The torus coils are approximately planar. Each sector subtends an azimuthal range of 60$^\circ$ from the mid-plane of one coil to the mid-plane of the adjacent coil. The “sector mid-plane” is an imaginary plane which bisects the sector’s azimuth.
-Charged particles in the CLAS12 detector are tracked using drift chambers \cite{Mestayer:2020saf} inside the toroidal magnetic field. There are six identical independent drift chamber systems in CLAS12 (one for each azimuthal sector). Each sector of drift chambers consists of three chamber sets (called "regions"), and each region consists of two chambers called super-layers each of them containing 6 layers of wires perpendicular to particle trajectories in CLAS12. The tracks passing through drift chambers leave signal in each of the layers (36 in total), which are broken down into 6 segments (one segment per super-layer). The tracking algorithm relies on forming track candidates on all combinations of segments (one from each super-layer). On Figure~\ref{dc:tracks} few typical events can be seen with signals in one sector of drift chambers.
-Each figure consists of 36x112 points each point representing a wire that was hit in the event. On the top row of the figure raw hits are show, and on the bottom row the hits belonging to the tracks reconstructed by CLAS12 tracking algorithm.
-
-\begin{figure}[!ht]
-\begin{center}
- \includegraphics[width=1.5in]{Figures/intro_noisy0.png}
-  \includegraphics[width=1.5in]{Figures/intro_noisy1.png}
-   \includegraphics[width=1.5in]{Figures/intro_noisy2.png}
-    \includegraphics[width=1.5in]{Figures/intro_noisy4.png}
-   \includegraphics[width=1.5in]{Figures/intro_correct0.png}
-     \includegraphics[width=1.5in]{Figures/intro_correct1.png}
-        \includegraphics[width=1.5in]{Figures/intro_correct2.png}
-           \includegraphics[width=1.5in]{Figures/intro_correct4.png}
-\caption {Example events.}
- \label{dc:tracks}
- \end{center}
-\end{figure}
-
-During reconstruction process the raw hits are analyzed to remove noise hits, then clustering algorithm combines hits in each super-layer to form clusters. After clustering tracking algorithm considers all combinations of 6 clusters (one in each super-layer) to form a track candidate. All track candidates are fitted and processed by Kalman-Filter and best candidates, that have good $\chi^2$ and are tracked to target position are kept in the output. Sometimes due to high occupancy in the lower regions of drift chamber (which are closer to beam) it is impossible to effectively remove noise and cluster, which leads to loss of efficiency of track reconstruction. In this work we investigate if neural networks can help us clean the raw data to leave only hits that can potentially end up being part of a track. We plan to use auto-encoder type networks for de-noising the data.
-
-%With time some inefficiencies in detector develop leading to missing segments in one (or more) of the super-layers, and this results in efficiency drop in track identification. In this work we investigate neural networks that can help as improve the track finding efficiency when there are missing segments in some parts of the drift chambers.
-
-\section{Data}
-
-\indent
-
-The data to be used in our studies was taken from real experimental data that ran through standard reconstruction code. For initial noisy sample all hits in one sector of drift chambers was taken as an input to the auto-encoder, for the output the hits belonging to reconstructed tracks are taken. As can be seen on Figure~\ref{dc:tracks} there are instances with one and two tracks reconstructed, and all these samples are considered.
-
-
-\section{Systematic Studies}
-
-It was shown that Convolutional auto-encoders are very efficient in de-noising data from CLAS12 drift chambers in normal conditions. Next we will study how increased noise can affect the accuracy of de-noising auto-encoder. Different experiments are carried out with different initial beam current to increase yield of physics reactions. The high beam current produces more background hits, especially in drift chamber super-layers that are closest to the beam. The consequence is that clustering algorithm is not able in some cases to separate clean clusters and build track candidates, which leads to decreased efficiency of track reconstruction. In this paper we want to study how our de-noising network will perform when background hits are increased. We trained network on data sample that has minimal background, and used the network to de-noise data produced at higher background conditions. To emulate high background environment a standard tool from CLAS12 software was used, where random events from high luminosity runs (such as 45nA, 50nA and so on) are mixed with clean events from a run with 5nA initial beam current. Then the de-noising algorithm was used to clean the hits from an event to extract only hits that are part of a good track. The metrics we used to measure network performance are the number of hits (percentage) reconstructed from the original track segments and percentage of the noise that was left after cleaning the hits.
-
-\begin{figure}[!ht]
-\begin{center}
- \includegraphics[width=3.0in]{Figures/hits_mean_diff_luminosity.pdf}
- \includegraphics[width=3.0in]{Figures/noise_reduction_diff_luminosity.pdf}
- \caption {Study of hit reconstruction with different noise level}
- \label{dc:noise_study_summary}
- \end{center}
-\end{figure}
-
-The results are shown on Figure~\ref{dc:noise_study_summary}, where on the left panel the reconstructed fraction of original hits is plotted as a function of beam initial current, and on the right panel the fraction of noise hits removed by network from original raw data. As can be seen from the figure the network performance drops slowly with the luminosity, but it's not very dramatic. Some sample images for different luminosity can be seen on Figure~\ref{dc:noise_study_samples} where one sample from each luminosity (background) setting is presented in each row, along with the truth (the middle column) that represents only hits that belong to a reconstructed track and with auto-encoder reconstructed image (right column).
-As can be seen from the example images there are some traces of background still present in the reconstructed image, but they are very few and can be eliminated by tracking algorithm during track candidate selection. It is worth noting that more than 90\% of the background is removed by neural network by leaving only clean sample of hits that can be clustered much easier.
-
-\begin{figure}[!ht]
-\begin{center}
-\includegraphics[width=2.0in]{Figures/noisy0_45nA.png}
-\includegraphics[width=2.0in]{Figures/correct0_45nA.png}
-\includegraphics[width=2.0in]{Figures/denoised0_45nA.png}
-
-\includegraphics[width=2.0in]{Figures/noisy0_50nA.png}
-\includegraphics[width=2.0in]{Figures/correct0_50nA.png}
-\includegraphics[width=2.0in]{Figures/denoised0_50nA.png}
-
-\includegraphics[width=2.0in]{Figures/noisy0_55nA.png}
-\includegraphics[width=2.0in]{Figures/correct0_55nA.png}
-\includegraphics[width=2.0in]{Figures/denoised0_55nA.png}
-
-\includegraphics[width=2.0in]{Figures/noisy0_90nA.png}
-\includegraphics[width=2.0in]{Figures/correct0_90nA.png}
-\includegraphics[width=2.0in]{Figures/denoised0_90nA.png}
-
-\includegraphics[width=2.0in]{Figures/noisy4_100nA.png}
-\includegraphics[width=2.0in]{Figures/correct4_100nA.png}
-\includegraphics[width=2.0in]{Figures/denoised4_100nA.png}
-
-\includegraphics[width=2.0in]{Figures/noisy1_110nA.png}
-\includegraphics[width=2.0in]{Figures/correct1_110nA.png}
-\includegraphics[width=2.0in]{Figures/denoised1_110nA.png}
-
- \caption {De-noised events samples from systematic studies. The left column is
- the original raw data with all the hits in drift chamber. The middle column is are
- hits that belong to tracks that were reconstructed by CLAS12 tracking algorithm,
- and the right column is the reconstructed image of de-noising auto-encoder from
- raw data. the rows represent different background levels
- (45 nA , 50 nA, 55 nA, 90 nA, 100 nA and 110 nA respectively) .}
-
- \label{dc:noise_study_samples}
- \end{center}
-\end{figure}
-
-The hit reconstruction efficiency does not fully describe the efficiency of reconstruction, since current
-track reconstruction procedure of CLAS12 can identify and reconstruct tracks based on signals from
-5 super-layers. This was achieved by using a auto-encoder Neural Network~\cite{Gavalian:2020xmc}
-which was developed for predicting missing segment location and was able to isolate good track
-candidates from 5 super-layer combinations. To refine the metrics used to assess de-noising performance
-we used reconstructed images to measure the fraction of tracks that had 5 super-layers clusters
-completely reconstructed.
-
-
-The results are shown on Figure~\ref{dc:denoise_5_sl} where efficiency of 6 super-layer and 5 super-layer
-reconstruction is shown.
+\input{introduction}
+%\newpage
+\input{systematic_study}
 
 \newpage
-\bibliography{references}
-\bibliographystyle{ieeetr}
+
+%\bibliography{references}
+%\bibliographystyle{ieeetr}
+
+\begin{thebibliography}{99}
+
+\bibitem{clas12-nim}
+V.D. Burkert {\it et al.}, ``The CLAS12 Spectrometer at Jefferson Laboratory'', to be published in Nucl. Inst. and Meth. A, (2020). 
+
+\bibitem{dc-nim}
+M.D. Mestayer {\it et al.}. ``The CLAS12 Drift Chamber System'', to be published in Nucl. Inst. and Meth. A, (2020). 
+
+\end{thebibliography}
 
 \end{document}

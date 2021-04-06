@@ -303,18 +303,29 @@ public class Clas12TrackClassifier {
         Event event = new Event();
         Bank  cBank = reader.getBank("HitBasedTrkg::HBClusters");
         Bank  tBank = reader.getBank("TimeBasedTrkg::TBTracks");
+        Bank  hBank = reader.getBank("HitBasedTrkg::HBTracks");
         Bank  aBank = reader.getBank("TimeBasedTrkg::AITracks");
+        Bank  ahBank = reader.getBank("HitBasedTrkg::AITracks");
+        
         Bank  rBank = reader.getBank("RUN::config");
+        Bank  aiBank = reader.getBank("ai::tracks");
         
         reader.getEvent(event, eventNumber);
+        event.read(aBank);
+        event.read(ahBank);
         
+        event.read(rBank);        
         event.read(cBank);
         event.read(tBank);
-        event.read(rBank);
+        event.read(hBank);
+        event.read(aiBank);
         //cBank.show();
         rBank.show();
+        ahBank.show();
         aBank.show();
+        hBank.show();
         tBank.show();
+        aiBank.show();
 
         System.out.println("BANK SIZE = " + cBank.getRows());
         

@@ -44,6 +44,8 @@ public class LayerDenoiseEncoder {
     }
     
     public static void evaluate(MultiLayerNetwork network, DataSet test, double threshold){
+        
+        
         INDArray   input = test.getFeatures();
         INDArray desired = test.getLabels();
         long        size = input.size(0);

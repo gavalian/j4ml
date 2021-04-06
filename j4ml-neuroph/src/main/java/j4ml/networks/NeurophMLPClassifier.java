@@ -27,7 +27,7 @@ public class NeurophMLPClassifier {
     }
     
     public void init(int[] layersSize){
-        network = new MultiLayerPerceptron(TransferFunctionType.RECTIFIED,layersSize);
+        network = new MultiLayerPerceptron(layersSize);
         StringBuilder str = new StringBuilder();
         for(int i = 0; i < layersSize.length; i++) str.append(String.format("%dx", layersSize[i]));
         networkTitle = str.toString();

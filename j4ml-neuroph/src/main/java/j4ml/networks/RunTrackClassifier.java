@@ -53,6 +53,7 @@ public class RunTrackClassifier {
             if(counter>=max) break;
         }
         System.out.printf("[READ-DATASET] data set imported, rows = %d\n",counter);
+        //System.out.println(dataset);
         return dataset;
     }
     
@@ -80,9 +81,13 @@ public class RunTrackClassifier {
         //classifier.init(new int[]{6,24,24,3});
         classifier.init(layerConfig);
         classifier.configure();
+        
+        
         DataSet trainingSet = RunTrackClassifier.readDataset(filename,nsamples,0);
         DataSet testingSet  = RunTrackClassifier.readDataset(filenameTest, 40000,0);
         trainingSet.shuffle();
+        testingSet.shuffle();
+        System.out.println(trainingSet);
         classifier.train(trainingSet,testingSet, nEpochs);
         
         classifier.save("trackClassifier.nnet");

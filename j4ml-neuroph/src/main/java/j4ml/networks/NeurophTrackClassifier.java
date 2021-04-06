@@ -5,7 +5,12 @@
  */
 package j4ml.networks;
 
+import java.util.List;
+import org.neuroph.core.Connection;
+import org.neuroph.core.Layer;
 import org.neuroph.core.NeuralNetwork;
+import org.neuroph.core.Neuron;
+import org.neuroph.core.Weight;
 
 /**
  *
@@ -37,4 +42,30 @@ public class NeurophTrackClassifier {
         return index;
     }
     
+    public void print(){
+        List<Layer> layers = network.getLayers();
+        System.out.println(" layers size = " + layers.size());
+        int counter = 0;
+        for(Layer layer : layers){
+            List<Neuron>  neurons = layer.getNeurons();
+            System.out.println("layer # " + counter + " neurons = " + neurons.size());
+            for(Neuron neuron : neurons){
+                System.out.println(neuron);
+                Weight[] weights = neuron.getWeights();
+                List<Connection> connections = neuron.getInputConnections();
+                System.out.println("\t\t weight length = " + weights.length 
+                        + "  connections = " + connections.size());
+                for(Weight w : weights){
+                    System.out.println(" \t\t   >> " + w);
+                }
+            }
+            counter++;
+        }
+    }
+    
+    public static void main(String[] args){
+       NeurophTrackClassifier c = new  NeurophTrackClassifier();
+       c.load("trackClassifier.nnet");
+       c.print();
+    }
 }

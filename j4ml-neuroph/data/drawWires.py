@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 matplotlib.rcParams['figure.figsize'] = 9, 3
-x, y = np.loadtxt("raw/dc_hits_22.txt",unpack=True)
-xt, yt = np.loadtxt("raw/dc_track_22.txt",unpack=True)
+x, y = np.loadtxt("raw/dc_hits_21.txt",unpack=True)
+xt, yt = np.loadtxt("raw/dc_track_21.txt",unpack=True)
 colors = (0,0,0)
 area = np.pi*10
 
