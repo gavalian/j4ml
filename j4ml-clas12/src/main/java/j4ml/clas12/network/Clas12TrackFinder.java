@@ -12,7 +12,9 @@ import j4ml.clas12.tracking.ClusterStore;
 import j4ml.clas12.tracking.Track;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.jlab.jnp.hipo4.data.Bank;
 import org.jlab.jnp.hipo4.data.Event;
 import org.jlab.jnp.hipo4.io.HipoReader;
@@ -49,6 +51,22 @@ public class Clas12TrackFinder {
         return finder;
     }
     
+    public static Clas12TrackFinder createEJML(String envDir, String file){
+        Clas12TrackFinder finder = new Clas12TrackFinder();
+        EJMLTrackNeuralNetwork network = new EJMLTrackNeuralNetwork();
+        
+        Map<String,String>  files = new HashMap<String,String>();
+        files.put("classifier", "trackClassifier.network");
+        files.put("fixer", "trackFixer.network");
+        finder.setEnvironment(envDir);
+        
+        String path = finder.getPathWithEnvironment(file);
+        network.initZip(path, "network/5038", files);
+        
+        finder.setTrackingNetwork(network);
+        return finder;
+    }
+    
     public void setTrackingNetwork(NeuralNetworkTracking nnt){
         this.neuralNetworkTracker = nnt;
     }
@@ -61,6 +79,12 @@ public class Clas12TrackFinder {
        return null;
     }
     
+    private String getPathWithEnvironment(String relative){
+       if(envDirectory==null) return relative;
+       if(System.getenv(envDirectory)!=null) return System.getenv(envDirectory)+"/"+relative;
+       if(System.getProperty(envDirectory)!=null) return System.getProperty(envDirectory)+"/"+relative;
+       return relative;
+    }
     public void init(List<String> networkFiles){
         String topDir = getEnvironment();
         if(topDir==null){
@@ -177,14 +201,16 @@ public class Clas12TrackFinder {
     
     
     public static void debug(String filename, int nevent){
-        Clas12TrackFinder finder = Clas12TrackFinder.createEJML();
-        finder.init(Arrays.asList(
+        
+        Clas12TrackFinder finder = Clas12TrackFinder.createEJML("CLAS12DIR","etc/ejml/ejmlclas12.network");
+        /*finder.init(Arrays.asList(
                 //"etc/ejml/trackClassifierModel.csv",
                 "etc/ejml/trackClassifier.network",
                 "etc/ejml/trackFixer.network"
                 //"etc/ejml/trackFixerModel.csv"
-        ));
+        ));*/
         HipoReader reader = new HipoReader();
+        reader.setDebugMode(0);
         reader.open(filename);
         Event event = new Event();
         
@@ -199,15 +225,16 @@ public class Clas12TrackFinder {
         event.read(hbClusters);
         
         List<Track>  tracks = Track.read(tbTracks,tbClusters);
-        
+        System.out.println("\n\n********** conventionsl tracks ****************************\n");
         for(Track t: tracks){
             //if(t.complete()==true){
                 System.out.println(t);                
         }
         
         finder.process(hbClusters);
+        System.out.println("\n############ ai predictions ###################################");
         System.out.println(finder.getResults().toString());
-        
+        System.out.println("\n");
     }
     
     public static void main(String[] args){

@@ -38,11 +38,13 @@ public class Clas12TrackValidation {
                 "trackFixer.network"));
     }
     
-    public Clas12TrackValidation(String evnDir){
-        finder = Clas12TrackFinder.createEJML();
-        finder.setEnvironment(evnDir);
+    public Clas12TrackValidation(String envDir){
+        finder = Clas12TrackFinder.createEJML(envDir,"etc/ejml/ejmlclas12.network");
+        /*finder = Clas12TrackFinder.createEJML();
+        finder.setEnvironment(envDir);
         finder.init(Arrays.asList("trackClassifier.network",
-                "trackFixer.network"));
+                "trackFixer.network"));*/
+        
     }
     public void init(HipoReader reader){
         bankTracksTB   = reader.getBank("TimeBasedTrkg::TBTracks");

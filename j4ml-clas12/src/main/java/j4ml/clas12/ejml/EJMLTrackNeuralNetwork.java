@@ -9,6 +9,7 @@ import j4ml.clas12.network.NeuralNetworkTracking;
 import j4ml.clas12.tracking.ClusterCombinations;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -65,8 +66,7 @@ public class EJMLTrackNeuralNetwork extends NeuralNetworkTracking {
             
             if(index>=0){
                 networkFixer.feedForward(features, output);
-                comb.setRow(i).setMean(index, output[index]*112.0);
-                
+                comb.setRow(i).setMean(index, output[index]*112.0);                
             }
         }
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -83,5 +83,30 @@ public class EJMLTrackNeuralNetwork extends NeuralNetworkTracking {
         networkClassifier = new EJMLModelEvaluator(fileList.get(0));
         System.out.println("[EJML-NN] >> reading fixer  file : " + fileList.get(1));
         networkFixer = new EJMLModelEvaluator(fileList.get(1));
+    }
+    
+    public void initZip(String zipFile, String directory, Map<String,String> mlFiles){
+        ZipReader reader = new ZipReader();
+        if(mlFiles.containsKey("classifier")==true){
+            String classifierFile = directory + "/" + mlFiles.get("classifier");
+            List<String>    lines = reader.readTxt(zipFile, classifierFile);
+            networkClassifier = EJMLModelEvaluator.create(lines);
+            System.out.println("[ejml::init] info : classifier file name ; " + classifierFile);
+            System.out.println("[ejml::init] info : classifier network loaded ; " + networkClassifier.summary());
+        } else {
+            System.out.println("[ejml::init] warning : no input file provided for classifier;");
+            networkClassifier = null;
+        }
+        
+        if(mlFiles.containsKey("fixer")==true){
+            String fixerFile = directory + "/" + mlFiles.get("fixer");
+            List<String>    lines = reader.readTxt(zipFile, fixerFile);
+            networkFixer = EJMLModelEvaluator.create(lines);
+            System.out.println("[ejml::init] info : fixer file name ; " + fixerFile);
+            System.out.println("[ejml::init] info : fixer network loaded ; " + networkFixer.summary());
+        } else {
+            System.out.println("[ejml::init] warning : no input file provided for fixer;");
+            networkClassifier = null;
+        }
     }
 }
