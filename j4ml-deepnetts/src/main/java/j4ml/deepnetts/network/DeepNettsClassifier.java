@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.visrec.ml.data.DataSet;
 import javax.visrec.ml.eval.EvaluationMetrics;
+import org.jlab.jnp.readers.TextFileWriter;
 
 /**
  *
@@ -76,23 +77,33 @@ public class DeepNettsClassifier {
     }
     
     public void save(String filename){
-        System.out.println("-------- Neural Network -----");        
-        System.out.println(neuralNet.getLayers().size());
+        TextFileWriter writer = new TextFileWriter();
+        writer.open(filename);
+        //System.out.println("-------- Neural Network -----"); 
+        //System.out.println(neuralNet.getLayers().size());
         int nLayers = neuralNet.getLayers().size();
         for(int i = 1; i < nLayers; i++){
-            System.out.println(neuralNet.getLayers().get(i-1).getWidth()
+            //System.out.println(neuralNet.getLayers().get(i-1).getWidth()
+            //        +","+neuralNet.getLayers().get(i).getWidth());
+            writer.writeString(neuralNet.getLayers().get(i-1).getWidth()
                     +","+neuralNet.getLayers().get(i).getWidth());
             //System.out.println(DataSetReader.getString(neuralNet.getLayers().get(i).getWeights().getValues(),","));
             float[] weigths = neuralNet.getLayers().get(i).getWeights().getValues();
             int     width   = neuralNet.getLayers().get(i).getWidth();
             int     widthP  = neuralNet.getLayers().get(i-1).getWidth();
             for(int k = 0; k < widthP; k++){
-                System.out.println(DataSetReader.getString(neuralNet.getLayers().get(i).getWeights().getValues(),
+                //System.out.println(DataSetReader.getString(neuralNet.getLayers().get(i).getWeights().getValues(),
+                //        k*width, width,","));
+                writer.writeString(DataSetReader.getString(neuralNet.getLayers().get(i).getWeights().getValues(),
                         k*width, width,","));
             }
-            System.out.println(DataSetReader.getString(neuralNet.getLayers().get(i).getBiases(),","));
+            //System.out.println(DataSetReader.getString(neuralNet.getLayers().get(i).getBiases(),","));
+            writer.writeString(DataSetReader.getString(neuralNet.getLayers().get(i).getBiases(),","));
         }
-        System.out.println("-------- End of Neural Network -----");
+        
+        //System.out.println("-------- End of Neural Network -----");
+        writer.close();
+        System.out.println("deepnetts::classifier: network file saved : " + filename);
         /*try {
             FileIO.writeToFileAsJson(neuralNet, filename + "_deepnetts.json");
         } catch (IOException ex) {
@@ -108,8 +119,7 @@ public class DeepNettsClassifier {
         
         System.out.println("accuracy = " + trainer.getTrainingAccuracy());
         System.out.println("loss = " + trainer.getTrainingLoss());
-    }
-    
+    }    
     
     public void evaluate(DataSet set){
         ClassifierEvaluator evaluator = new ClassifierEvaluator();

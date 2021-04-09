@@ -10,6 +10,7 @@ import j4ml.clas12.ejml.EJMLTrackNeuralNetwork;
 import j4ml.clas12.tracking.ClusterCombinations;
 import j4ml.clas12.tracking.ClusterStore;
 import j4ml.clas12.tracking.Track;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.jlab.jnp.hipo4.data.Bank;
@@ -35,6 +36,7 @@ public class Clas12TrackFinder {
     private long                        timeInference   = 0L;
     private long                          timeReading   = 0L;
     private long                          timeAnalyzing = 0L;
+    private String                         envDirectory = null;
     
     public Clas12TrackFinder(){
         //classifier = new Clas12TrackAINeuroph();
@@ -50,9 +52,26 @@ public class Clas12TrackFinder {
     public void setTrackingNetwork(NeuralNetworkTracking nnt){
         this.neuralNetworkTracker = nnt;
     }
+    public void setEnvironment(String envDir){ envDirectory = envDir;}
     
-    public void init(List<String> networkFiles){        
-        this.neuralNetworkTracker.init(networkFiles);
+    private String getEnvironment(){
+       if(envDirectory==null) return null;
+       if(System.getenv(envDirectory)!=null) return System.getenv(envDirectory);
+       if(System.getProperty(envDirectory)!=null) return System.getProperty(envDirectory);
+       return null;
+    }
+    
+    public void init(List<String> networkFiles){
+        String topDir = getEnvironment();
+        if(topDir==null){
+            this.neuralNetworkTracker.init(networkFiles);
+        } else {
+            List<String>  nf = new ArrayList<>();
+            for(int i = 0; i < networkFiles.size(); i++){
+                nf.add(topDir+"/"+networkFiles.get(i));
+            }
+            this.neuralNetworkTracker.init(nf);
+        }
     }
     /**
      * Reading the bank and filling structures for given sector.
@@ -156,11 +175,50 @@ public class Clas12TrackFinder {
             }
     }*/
     
+    
+    public static void debug(String filename, int nevent){
+        Clas12TrackFinder finder = Clas12TrackFinder.createEJML();
+        finder.init(Arrays.asList(
+                //"etc/ejml/trackClassifierModel.csv",
+                "etc/ejml/trackClassifier.network",
+                "etc/ejml/trackFixer.network"
+                //"etc/ejml/trackFixerModel.csv"
+        ));
+        HipoReader reader = new HipoReader();
+        reader.open(filename);
+        Event event = new Event();
+        
+        Bank   tbTracks = reader.getBank("TimeBasedTrkg::TBTracks");
+        Bank tbClusters = reader.getBank("TimeBasedTrkg::TBClusters");
+        Bank hbClusters = reader.getBank("HitBasedTrkg::HBClusters");
+        
+        reader.getEvent(event, nevent);
+        
+        event.read(tbTracks);
+        event.read(tbClusters);
+        event.read(hbClusters);
+        
+        List<Track>  tracks = Track.read(tbTracks,tbClusters);
+        
+        for(Track t: tracks){
+            //if(t.complete()==true){
+                System.out.println(t);                
+        }
+        
+        finder.process(hbClusters);
+        System.out.println(finder.getResults().toString());
+        
+    }
+    
     public static void main(String[] args){
         
+        String filename = args[0];
+        Integer nevent  = Integer.parseInt(args[1]);
+        
+        Clas12TrackFinder.debug(filename, nevent);
         
         //Clas12TrackFinder finder = new Clas12TrackFinder();
-        
+        /*
         Clas12TrackFinder finder = Clas12TrackFinder.createEJML();
         
         finder.init(Arrays.asList("etc/ejml/trackClassifierModel.csv",
@@ -212,5 +270,6 @@ public class Clas12TrackFinder {
         
         double time = ( (double) totalTime )/counter;
         System.out.printf("evaluation time = %.4f ms/event\n",time);
+        */
     }
 }

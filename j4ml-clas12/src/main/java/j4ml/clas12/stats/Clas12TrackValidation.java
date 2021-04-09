@@ -15,6 +15,7 @@ import org.jlab.jnp.hipo4.data.Bank;
 import org.jlab.jnp.hipo4.data.Event;
 import org.jlab.jnp.hipo4.io.HipoReader;
 import org.jlab.jnp.utils.data.TextHistogram;
+import org.jlab.jnp.utils.options.OptionParser;
 
 /**
  *
@@ -30,12 +31,19 @@ public class Clas12TrackValidation {
     Bank   bankClustersHB = null;
     
     public Clas12TrackValidation(){
-        finder = Clas12TrackFinder.createEJML();
-        
-        finder.init(Arrays.asList("etc/ejml/trackClassifierModel-balanced.csv",
-                "etc/ejml/trackFixerModel.csv"));
+        finder = Clas12TrackFinder.createEJML();        
+        //finder.init(Arrays.asList("etc/ejml/trackClassifierModel.csv",
+        //        "etc/ejml/trackFixerModel.csv"));
+        finder.init(Arrays.asList("trackClassifier.network",
+                "trackFixer.network"));
     }
     
+    public Clas12TrackValidation(String evnDir){
+        finder = Clas12TrackFinder.createEJML();
+        finder.setEnvironment(evnDir);
+        finder.init(Arrays.asList("trackClassifier.network",
+                "trackFixer.network"));
+    }
     public void init(HipoReader reader){
         bankTracksTB   = reader.getBank("TimeBasedTrkg::TBTracks");
         bankClustersTB = reader.getBank("TimeBasedTrkg::TBClusters");
@@ -63,7 +71,7 @@ public class Clas12TrackValidation {
         
         ClusterCombinations result = finder.getResults();
 
-        int matches = 0;        
+        int matches = 0;
         for(int i = 0; i < validTracks.size(); i++){
             int[] clusters = validTracks.get(i).clusters;
             if(validTracks.get(i).charge>0){
@@ -171,7 +179,7 @@ public class Clas12TrackValidation {
         hist.print();
         Map<String,Double> mapNeg = stats.getMetrics("negative").histogram();
         System.out.println("--------------- negatives --------------------");
-        hist.setData(map);
+        hist.setData(mapNeg);
         hist.print();        
         
     }
@@ -181,9 +189,33 @@ public class Clas12TrackValidation {
     }
     
     public static void main(String[] args){
-        String filename = "/Users/gavalian/Work/DataSpace/cooked/rec_clas_005038.evio.00360-00364.hipo";
+        OptionParser parser = new OptionParser();
+        parser.addOption("-dir","null", "enviroment directory where network files are located");
+        parser.addOption("-n","25000", "number of events to process");
+        
+        
+        parser.parse(args);
+        
+        List<String> inputFiles = parser.getInputList();
+        if(inputFiles.size()<1){
+            parser.printUsage();
+            System.exit(0);
+        }
+        
+        String filename = inputFiles.get(0);
         //String filename = "/Users/gavalian/Work/DataSpace/cooked/rec_clas_005038.evio.00360-00364.hipo";
-        Clas12TrackValidation validation = new Clas12TrackValidation();
-        validation.processFile(filename,25000);
+        int nEvents = parser.getOption("-n").intValue();
+        String dir  = parser.getOption("-dir").stringValue();
+        Clas12TrackValidation validation = null;
+
+        if(dir.startsWith("null")==false){
+            validation = 
+                    new Clas12TrackValidation(dir);
+        } else {
+            validation = 
+                    new Clas12TrackValidation();
+        }
+
+        validation.processFile(filename,nEvents);
     }
 }

@@ -20,12 +20,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.visrec.ml.data.DataSet;
+import org.jlab.jnp.readers.TextFileWriter;
 
 /**
  *
  * @author gavalian
  */
 public class DeepNettsEncoder {
+    
     FeedForwardNetwork neuralNet = null;
     BackpropagationTrainer trainer  = null;
         
@@ -176,18 +178,45 @@ public class DeepNettsEncoder {
         return dataset;
     }
     public void save(String filename){
+        TextFileWriter writer = new TextFileWriter();
+        writer.open(filename);
+        
+        System.out.println("-------- Neural Network -----"); 
+        System.out.println(neuralNet.getLayers().size());
+        int nLayers = neuralNet.getLayers().size();
+        for(int i = 1; i < nLayers; i++){
+            System.out.println(neuralNet.getLayers().get(i-1).getWidth()
+                    +","+neuralNet.getLayers().get(i).getWidth());
+            writer.writeString(neuralNet.getLayers().get(i-1).getWidth()
+                    +","+neuralNet.getLayers().get(i).getWidth());
+            //System.out.println(DataSetReader.getString(neuralNet.getLayers().get(i).getWeights().getValues(),","));
+            float[] weigths = neuralNet.getLayers().get(i).getWeights().getValues();
+            int     width   = neuralNet.getLayers().get(i).getWidth();
+            int     widthP  = neuralNet.getLayers().get(i-1).getWidth();
+            for(int k = 0; k < widthP; k++){
+                System.out.println(DataSetReader.getString(neuralNet.getLayers().get(i).getWeights().getValues(),
+                        k*width, width,","));
+                writer.writeString(DataSetReader.getString(neuralNet.getLayers().get(i).getWeights().getValues(),
+                        k*width, width,","));
+            }
+            System.out.println(DataSetReader.getString(neuralNet.getLayers().get(i).getBiases(),","));
+            writer.writeString(DataSetReader.getString(neuralNet.getLayers().get(i).getBiases(),","));
+        }
+        System.out.println("-------- End of Neural Network -----");
+        writer.close();
+        
+        /*
         System.out.println("-------- Neural Network -----");
         for(int i = 1; i < 7; i++){
-            /*System.out.println("size = [" + i + "] = " + neuralNet.getLayers().get(i-1).getDepth() 
-                    + " " + neuralNet.getLayers().get(i-1).getWidth() 
-                    + " " + neuralNet.getLayers().get(i-1).getHeight());*/
             System.out.println(neuralNet.getLayers().get(i-1).getWidth()
                     +","+neuralNet.getLayers().get(i).getWidth());
             System.out.println(DataSetReader.getString(neuralNet.getLayers().get(i).getWeights().getValues(),","));
             System.out.println(DataSetReader.getString(neuralNet.getLayers().get(i).getBiases(),","));
         }
         System.out.println("-------- End of Neural Network -----");
-        try {
+        */
+        
+        /*try {
             FileIO.writeToFile(neuralNet, filename + ".deepnetts");
         } catch (IOException ex) {
             Logger.getLogger(DeepNettsClassifier.class.getName()).log(Level.SEVERE, null, ex);
@@ -197,7 +226,7 @@ public class DeepNettsEncoder {
             FileIO.writeToFileAsJson(neuralNet, filename + "_deepnetts.json");
         } catch (IOException ex) {
             Logger.getLogger(DeepNettsClassifier.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
     }
     
     public static void main(String[] args){

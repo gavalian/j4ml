@@ -172,15 +172,20 @@ public class TrackDataExtractor {
                                   outEvent.setEventTag(bin+1);
                                   for(Node n : nodes) outEvent.write(n);
                                   outEvent.write(negativeNode);
-                                  writer.addEvent(outEvent,bin+1);
+                                  //writer.addEvent(outEvent,bin+1);
+                                  if(t.charge>0){
+                                      writer.addEvent(outEvent,1);
+                                  } else {
+                                      writer.addEvent(outEvent,0);
+                                  }
                               }
-                          }
                           }
                       }
                   }
               }
-              
-          System.out.println("processed event = " + counter);
-          writer.close();
+        }
+        
+        System.out.println("processed event = " + counter);
+        writer.close();
     }
 }

@@ -447,7 +447,7 @@ public class ClusterCombinations {
     public void analyze(){
         
         //int  size = this.getSize();
-        int indexPositive = getMaxItem(1);
+        int indexPositive = getMaxItem(2);
         int indexNegative = getMaxItem(1);
         
         
