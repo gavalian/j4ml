@@ -10,6 +10,7 @@ import j4ml.clas12.ejml.EJMLTrackNeuralNetwork;
 import j4ml.clas12.tracking.ClusterCombinations;
 import j4ml.clas12.tracking.ClusterStore;
 import j4ml.clas12.tracking.Track;
+import java.io.Console;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import java.util.Map;
 import org.jlab.jnp.hipo4.data.Bank;
 import org.jlab.jnp.hipo4.data.Event;
 import org.jlab.jnp.hipo4.io.HipoReader;
+import org.jlab.jnp.hipo4.utils.HipoUtilities;
 
 /**
  *
@@ -198,11 +200,42 @@ public class Clas12TrackFinder {
                 combinations.setRow(i).setStatus(index);
             }
     }*/
+    public static String waitForInput(){
+        String line = "";
+        Console c = System.console();
+        if (c != null) {
+            // printf-like arguments
+            //c.format(message, args);
+            c.format("\nChoose (n=next,p=previous, q=quit, h=help), Type Bank Name or id : ");
+            line = c.readLine();           
+        }
+        return line;
+    }
     
-    
-    public static void debug(String filename, int nevent){
-        
+    public static void cli(){
+        boolean exitLoop = false;
         Clas12TrackFinder finder = Clas12TrackFinder.createEJML("CLAS12DIR","etc/ejml/ejmlclas12.network");
+        while(exitLoop==false){
+            String response = HipoUtilities.waitForInput();
+            
+            String[] tokens = response.trim().split("\\s+");
+            if(tokens.length==6){
+                float[] means = new float[6];
+                for(int i = 0; i < 6; i++){
+                    means[i] = Float.parseFloat(tokens[i])/112.0f;                    
+                }
+                float[] output = finder.neuralNetworkTracker.getOutput(means);
+                for(int i = 0; i < output.length; i++)
+                    System.out.printf("%8.6f ",output[i]);
+                System.out.println();
+            }
+            if(response.compareTo("q")==0||response.compareTo("Q")==0) exitLoop = true;
+        }
+    }
+    
+    public static void debug(String filename, int nevent, String level, String networkFile){
+        
+        Clas12TrackFinder finder = Clas12TrackFinder.createEJML("CLAS12DIR",networkFile);
         /*finder.init(Arrays.asList(
                 //"etc/ejml/trackClassifierModel.csv",
                 "etc/ejml/trackClassifier.network",
@@ -217,13 +250,21 @@ public class Clas12TrackFinder {
         Bank   tbTracks = reader.getBank("TimeBasedTrkg::TBTracks");
         Bank tbClusters = reader.getBank("TimeBasedTrkg::TBClusters");
         Bank hbClusters = reader.getBank("HitBasedTrkg::HBClusters");
+        Bank aiTracks = reader.getBank("ai::tracks");
+        
+        if(level.compareTo("HB")==0){
+            tbTracks = reader.getBank("HitBasedTrkg::HBTracks");
+            tbClusters = reader.getBank("HitBasedTrkg::HBClusters");
+        }
         
         reader.getEvent(event, nevent);
         
         event.read(tbTracks);
         event.read(tbClusters);
         event.read(hbClusters);
+        event.read(aiTracks);
         
+        aiTracks.show();
         List<Track>  tracks = Track.read(tbTracks,tbClusters);
         System.out.println("\n\n********** conventionsl tracks ****************************\n");
         for(Track t: tracks){
@@ -240,10 +281,21 @@ public class Clas12TrackFinder {
     public static void main(String[] args){
         
         String filename = args[0];
-        Integer nevent  = Integer.parseInt(args[1]);
-        
-        Clas12TrackFinder.debug(filename, nevent);
-        
+        if(filename.compareTo("cli")==0){
+            Clas12TrackFinder.cli();
+        } else {
+            Integer nevent  = Integer.parseInt(args[1]);
+            String  network = "etc/ejml/ejmlclas12.network";
+            String level = "TB";
+            if(args.length>2){ 
+                level = args[2];
+                System.out.println("\n\n>>> SWITCH LAVEL TO " + level);
+            }
+            if(args.length>3){
+                network = args[3];
+            }
+            Clas12TrackFinder.debug(filename, nevent,level, network);
+        }
         //Clas12TrackFinder finder = new Clas12TrackFinder();
         /*
         Clas12TrackFinder finder = Clas12TrackFinder.createEJML();

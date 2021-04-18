@@ -27,8 +27,12 @@ public class Clas12TrackValidation {
     ValidationStatistics    stats = new ValidationStatistics();
     
     Bank     bankTracksTB = null;
+    Bank     bankTracksAI = null;
+    Bank   bankClustersAI = null;
     Bank   bankClustersTB = null;
     Bank   bankClustersHB = null;
+    
+    boolean showHistograms = false;
     
     public Clas12TrackValidation(){
         finder = Clas12TrackFinder.createEJML();        
@@ -46,13 +50,22 @@ public class Clas12TrackValidation {
                 "trackFixer.network"));*/
         
     }
+    
+    public void showHistogrmas(boolean flag){
+        this.showHistograms = flag;
+    }
+    
     public void init(HipoReader reader){
         bankTracksTB   = reader.getBank("TimeBasedTrkg::TBTracks");
+        bankTracksAI   = reader.getBank("TimeBasedTrkg::AITracks");
         bankClustersTB = reader.getBank("TimeBasedTrkg::TBClusters");
+        bankClustersAI = reader.getBank("TimeBasedTrkg::AIClusters");
         bankClustersHB = reader.getBank("HitBasedTrkg::HBClusters");
         
         stats.addMetrics("positive");
         stats.addMetrics("negative");
+        stats.addMetrics("positive (6 SL) AI");
+        stats.addMetrics("negative (6 SL) AI");
         stats.addMetrics("positive (5 SL)");
         stats.addMetrics("negative (5 SL)");
     }
@@ -60,11 +73,32 @@ public class Clas12TrackValidation {
     public void processEvent(Event event){
         
         event.read(bankTracksTB);
+        event.read(bankTracksAI);
+        
         event.read(bankClustersTB);
+        event.read(bankClustersAI);
         event.read(bankClustersHB);
         
-        List<Track>  tracks = Track.read(bankTracksTB,bankClustersTB);
+        List<Track>  tracksAI = Track.read(bankTracksAI,bankClustersAI);
+        List<Track>  validTracksAI = Track.getComplete(tracksAI);
+        //System.out.println(" tracks in AI = " + validTracksAI.size());
+        for(int i = 0; i < validTracksAI.size(); i++){
+            
+            //int[] clusters = validTracksAI.get(i).clusters;
+            //System.out.println(" charge = " + validTracksAI.get(i).charge + " , mag = " + validTracksAI.get(i).vector.mag());
+            if(validTracksAI.get(i).charge>0){
+                //System.out.println("filling positive");
+                stats.getMetrics("positive (6 SL) AI").fill(validTracksAI.get(i).vector.mag());
+                stats.getMetrics("positive (6 SL) AI").addMatched();
+            } else {
+                //System.out.println("filling negative");
+                stats.getMetrics("negative (6 SL) AI").fill(validTracksAI.get(i).vector.mag());
+                stats.getMetrics("negative (6 SL) AI").addMatched();
+            }
+        }
         
+        List<Track>  tracks = Track.read(bankTracksTB,bankClustersTB);
+                
         List<Track>  validTracks = Track.getComplete(tracks);
         List<Track>  validTracksMissing = Track.getCompleteWithMissing(tracks);
         //bankClustersHB.show();
@@ -170,20 +204,22 @@ public class Clas12TrackValidation {
             processEvent(event);
             if(max>0&&counter>max) break;
         }
+        
+        System.out.println("FILE: " + filename);
         stats.show();
         finder.showStatistics();
         
-        
-        Map<String,Double> map = stats.getMetrics("positive").histogram();
-        TextHistogram hist = new TextHistogram();
-        System.out.println("--------------- positives --------------------");
-        hist.setData(map);
-        hist.print();
-        Map<String,Double> mapNeg = stats.getMetrics("negative").histogram();
-        System.out.println("--------------- negatives --------------------");
-        hist.setData(mapNeg);
-        hist.print();        
-        
+        if(showHistograms==true){
+            Map<String,Double> map = stats.getMetrics("positive").histogram();
+            TextHistogram hist = new TextHistogram();
+            System.out.println("--------------- positives --------------------");
+            hist.setData(map);
+            hist.print();
+            Map<String,Double> mapNeg = stats.getMetrics("negative").histogram();
+            System.out.println("--------------- negatives --------------------");
+            hist.setData(mapNeg);
+            hist.print();
+        }        
     }
     
     public void processFile(String filename){
@@ -192,8 +228,9 @@ public class Clas12TrackValidation {
     
     public static void main(String[] args){
         OptionParser parser = new OptionParser();
-        parser.addOption("-dir","null", "enviroment directory where network files are located");
+        parser.addOption("-dir","CLAS12DIR", "enviroment directory where network files are located");
         parser.addOption("-n","25000", "number of events to process");
+        parser.addOption("-h","false", "show histograms");
         
         
         parser.parse(args);
@@ -207,6 +244,7 @@ public class Clas12TrackValidation {
         String filename = inputFiles.get(0);
         //String filename = "/Users/gavalian/Work/DataSpace/cooked/rec_clas_005038.evio.00360-00364.hipo";
         int nEvents = parser.getOption("-n").intValue();
+        String showHistograms = parser.getOption("-h").stringValue();
         String dir  = parser.getOption("-dir").stringValue();
         Clas12TrackValidation validation = null;
 
@@ -217,7 +255,7 @@ public class Clas12TrackValidation {
             validation = 
                     new Clas12TrackValidation();
         }
-
+        if(showHistograms.compareTo("true")==0) validation.showHistogrmas(true);
         validation.processFile(filename,nEvents);
     }
 }

@@ -70,7 +70,8 @@ public class DeepNettsClassifier {
         trainer = neuralNet.getTrainer();
         trainer.setMaxError(0.000004f);
         trainer.setLearningRate(0.001f);
-        trainer.setMomentum(0.7f);
+        trainer.setMomentum(0.9f);
+        
         trainer.setOptimizer(OptimizerType.SGD);
         trainer.setMaxEpochs(2000);
         

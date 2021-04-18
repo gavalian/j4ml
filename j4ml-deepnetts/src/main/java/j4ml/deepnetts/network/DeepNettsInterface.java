@@ -7,6 +7,7 @@ package j4ml.deepnetts.network;
 
 import j4ml.deepnetts.data.DataSetReader;
 import j4ml.deepnetts.data.HipoDataLoader;
+import j4ml.deepnetts.data.LSVMDataProvider;
 import java.util.List;
 import javax.visrec.ml.data.DataSet;
 import org.jlab.jnp.utils.options.OptionStore;
@@ -16,6 +17,21 @@ import org.jlab.jnp.utils.options.OptionStore;
  * @author gavalian
  */
 public class DeepNettsInterface {
+    
+    public static void trainClassifierLSVM(String lsvmTrain, String lsvmTest, int nepochs){
+        LSVMDataProvider provider = new LSVMDataProvider();
+        
+        DataSet  train = provider.readFile(lsvmTrain);
+        DataSet  test  = provider.readFile(lsvmTest);
+         DeepNettsClassifier classifier = new DeepNettsClassifier();
+        classifier.init(new int[]{6,24,24,12,3});
+        classifier.train(train,nepochs);
+//classifier.train(chunks[0],nepochs);
+        classifier.evaluate(test);
+        
+        classifier.save("trackClassifier.network");
+
+    }
     
     public static void trainClassifier(String filename, int nepochs, int max, boolean balance){
         DataSet inputData = HipoDataLoader.readDataSet(filename, max);
@@ -59,6 +75,8 @@ public class DeepNettsInterface {
     }
     public static void main(String[] args){
         
+        DeepNettsInterface.trainClassifierLSVM("dc_combined_sample_70k.lsvm","dc_combined_sample_70k_test.lsvm", 5000);
+        /*
         OptionStore store = new OptionStore("deep-netts");
         store.addCommand("-classifier", "train a classifier network");
         store.addCommand("-fixer", "train a classifier network");
@@ -87,6 +105,6 @@ public class DeepNettsInterface {
             int       epochs   = store.getOptionParser("-fixer").getOption("-e").intValue();
             boolean  balance   = store.getOptionParser("-fixer").getOption("-b").stringValue().compareTo("true")==0;
             DeepNettsInterface.trainFixer(input.get(0), epochs, max, balance);
-        }
+        }*/
     }
 }
