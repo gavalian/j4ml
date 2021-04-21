@@ -17,6 +17,8 @@ import java.util.Random;
  */
 public class ClusterStore {
     
+    private  boolean trackWidthRejection = true;
+    
     private final List<ClusterList> layerClusters = new ArrayList<ClusterList>();
     private final int[][] patterns = new int[][]{
         {1,2,3,4,5},
@@ -32,7 +34,12 @@ public class ClusterStore {
     public ClusterStore(){
         for(int i = 0; i < 6 ; i++) layerClusters.add(new ClusterList());
     }
-        
+    
+    
+    public void setTrackRejection(boolean flag){
+        this.trackWidthRejection = flag;
+    }
+    
     public void add(int layer, int id, double mean){
         layerClusters.get(layer).add(id, mean);
     }
@@ -72,9 +79,20 @@ public class ClusterStore {
                                 if(Math.abs(means[0]- means[1])<25.0&&
                                         Math.abs(means[2]- means[3])<25.0&&
                                         Math.abs(means[4]- means[5])<25.0){
-                                comb.add(ids, means);
+                                    
+                                    double m1 = (means[0]+means[1])/2.0;
+                                    double m2 = (means[2]+means[3])/2.0;
+                                    double m3 = (means[4]+means[5])/2.0;
+                                    if(this.trackWidthRejection==true){
+                                        if(Math.abs(m1-m2)<25.&&Math.abs(m2-m3)<65.&&
+                                                Math.abs(m3-m1)<65.){
+                                            comb.add(ids, means);
+                                        }
+                                    } else {
+                                        comb.add(ids, means);
+                                    }
+                                }
                             }
-                            }                            
                         }
                     }
                 }

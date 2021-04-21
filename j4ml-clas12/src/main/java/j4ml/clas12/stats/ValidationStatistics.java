@@ -36,7 +36,7 @@ public class ValidationStatistics {
        
        for(Map.Entry<String,TrackStatistics> entry : statsMap.entrySet()){
            System.out.println(entry.getValue().getString());
-       }       
+       }
        System.out.println("+------------------------------------------------------------------------------------------+");
        System.out.println();
     }

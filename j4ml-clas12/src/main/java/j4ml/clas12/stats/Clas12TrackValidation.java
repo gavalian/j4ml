@@ -25,6 +25,8 @@ public class Clas12TrackValidation {
     
     Clas12TrackFinder      finder = null;//new Clas12TrackFinder();
     ValidationStatistics    stats = new ValidationStatistics();
+    ParticleStats         partStats = new ParticleStats();
+    ParticleStats         partStatsAI = new ParticleStats();
     
     Bank     bankTracksTB = null;
     Bank     bankTracksAI = null;
@@ -32,7 +34,10 @@ public class Clas12TrackValidation {
     Bank   bankClustersTB = null;
     Bank   bankClustersHB = null;
     
-    boolean showHistograms = false;
+    Bank   bankParticles  = null;
+    Bank   bankParticlesAI  = null;
+    
+    boolean showHistograms = true;
     
     public Clas12TrackValidation(){
         finder = Clas12TrackFinder.createEJML();        
@@ -62,6 +67,9 @@ public class Clas12TrackValidation {
         bankClustersAI = reader.getBank("TimeBasedTrkg::AIClusters");
         bankClustersHB = reader.getBank("HitBasedTrkg::HBClusters");
         
+        bankParticles = reader.getBank("REC::Particle");
+        bankParticlesAI = reader.getBank("RECAI::Particle");
+        
         stats.addMetrics("positive");
         stats.addMetrics("negative");
         stats.addMetrics("positive (6 SL) AI");
@@ -78,6 +86,13 @@ public class Clas12TrackValidation {
         event.read(bankClustersTB);
         event.read(bankClustersAI);
         event.read(bankClustersHB);
+        
+        
+        event.read(bankParticles);
+        event.read(bankParticlesAI);
+        
+        this.partStats.analyze(bankParticles);
+        this.partStatsAI.analyze(bankParticlesAI);
         
         List<Track>  tracksAI = Track.read(bankTracksAI,bankClustersAI);
         List<Track>  validTracksAI = Track.getComplete(tracksAI);
@@ -208,6 +223,9 @@ public class Clas12TrackValidation {
         System.out.println("FILE: " + filename);
         stats.show();
         finder.showStatistics();
+        
+        System.out.print("CONV : ");this.partStats.show();
+        System.out.print("  AI : ");this.partStatsAI.show();
         
         if(showHistograms==true){
             Map<String,Double> map = stats.getMetrics("positive").histogram();

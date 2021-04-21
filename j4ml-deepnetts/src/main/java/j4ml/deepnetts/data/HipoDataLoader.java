@@ -8,6 +8,8 @@ package j4ml.deepnetts.data;
 import deepnetts.data.TabularDataSet;
 import java.util.ArrayList;
 import java.util.List;
+import javax.visrec.ml.data.DataSet;
+
 import org.jlab.jnp.hipo4.data.Event;
 import org.jlab.jnp.hipo4.data.Node;
 import org.jlab.jnp.hipo4.io.HipoReader;
@@ -26,7 +28,7 @@ public class HipoDataLoader {
         reader.setTags(tag);
         reader.setDebugMode(0);
         reader.open(filename);        
-        Event event = new Event();        
+        Event event = new Event(); 
         int counter = 0;
         int counterPositive = 0;
         int counterNegative = 0;
@@ -54,6 +56,10 @@ public class HipoDataLoader {
                 }
                 int charge = params.getShort(1);
                 
+                System.out.printf(" %3d %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f \n",
+                        charge, dataTrue[0]*112,dataTrue[1]*112,
+                        dataTrue[2]*112,dataTrue[3]*112,
+                        dataTrue[4]*112,dataTrue[5]*112);
                 if(charge<0){
                     //dataset.add(new TabularDataSet.Item( dataTrue, new float[]{0.0f,1.0f,0.0f}));
                     //dataset.add(new TabularDataSet.Item(dataFalse, new float[]{1.0f,0.0f,0.0f}));
@@ -78,6 +84,8 @@ public class HipoDataLoader {
                 ,tag,counter,counterPositive,counterNegative);
         return dataset;
     }
+        
+    
     
     public static TabularDataSet readDataSet(String filename, int max){
         TabularDataSet  dataset = new TabularDataSet(6,3);
@@ -94,5 +102,10 @@ public class HipoDataLoader {
         dataset.setColumnNames(new String[]{"a","b","c","d","e","f","no","neg","pos"});
         dataset.shuffle();
         return dataset;
+    }
+    
+    public static void main(String[] args){
+        DataSet set = HipoDataLoader.readDataSet(args[0], 25000);
+        
     }
 }
