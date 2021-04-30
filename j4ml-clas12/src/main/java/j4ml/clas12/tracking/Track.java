@@ -90,6 +90,12 @@ public class Track {
         return list;
     }
     
+    public float[] getFeatures(){
+        float[] features = new float[6];
+        for(int i = 0; i < 6; i++) features[i] = (float) (means[i]/112.0);
+        return features;
+    }
+    
     public int matchCount(int[] cid){
         int counter = 0;
         for(int i = 0; i < clusters.length; i++){

@@ -42,6 +42,13 @@ public class EJMLTrackNeuralNetwork extends NeuralNetworkTracking {
     }
     
     @Override
+    public float[] getFixedOutput(float[] features){
+        float[] output = new float[6];
+        networkFixer.feedForward(features, output);
+        return output;
+    }
+    
+    @Override
     public void classify(ClusterCombinations comb) {
         int nrows = comb.getSize();
         float[] features = new float[6];

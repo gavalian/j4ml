@@ -14,7 +14,8 @@ import java.util.List;
  */
 public class ClusterCombinations {
     
-    private final int BYTES_PER_ROW = 14*4;
+    //private final int BYTES_PER_ROW = 14*4;
+    private final int BYTES_PER_ROW = 20*4;
     private ByteBuffer   cBuffer = null;
     private int        activeRow = 0;
     
@@ -70,7 +71,17 @@ public class ClusterCombinations {
     
     public double getMean(int column){
         int offset = activeRow*BYTES_PER_ROW + 4 + 8 + 6*4 + column*4;
-        return cBuffer.getFloat(offset);        
+        return cBuffer.getFloat(offset);
+    }
+    
+    public void setSlope(int column, double slope){
+        int offset = activeRow*BYTES_PER_ROW + 4 + 8 + 6*4 + 6*4 + column*4;
+        cBuffer.putFloat(offset,(float) slope);
+    }
+    
+    public double getSlope(int column){
+        int offset = activeRow*BYTES_PER_ROW + 4 + 8 + 6*4 + 6*4 + column*4;
+        return cBuffer.getFloat(offset);
     }
     
     public final void allocate(int entries){
@@ -94,6 +105,13 @@ public class ClusterCombinations {
         setRow(row);
         double[] features = new double[6];
         for(int i =0; i < 6; i++) features[i] = getMean(i);
+        return features;
+    }
+    
+    public double[] getSlopes(int row){
+        setRow(row);
+        double[] features = new double[6];
+        for(int i =0; i < 6; i++) features[i] = getSlope(i);
         return features;
     }
     
@@ -282,6 +300,36 @@ public class ClusterCombinations {
         }
     }
     
+    
+    public final void add(int[] ids, double[] means, double[] slopes){
+        if(getSize()>440000){
+            System.out.println("no more : too many combinations......");
+            return;
+        }
+        if(ids.length!=6||means.length!=6){
+            System.out.println("cluster-combinations: error: adding failed");
+        } else {
+            int nrows = cBuffer.getInt(0);
+            activeRow = nrows;
+            nrows++;
+            cBuffer.putInt(0, nrows);
+            setStatus(0);
+            //int offset = activeRow*BYTES_PER_ROW + 4 + 8 ;
+            //int offsetf = activeRow*BYTES_PER_ROW + 4 + 8 + 6*4;
+            //byte[] tempi = new byte[4*6];
+            //float[] tempf = new float[6];
+            
+            //System.arraycopy(tempi, 0, cBuffer.array(), offset, 6*4);
+            //System.arraycopy(tempi, 0, cBuffer.array(), offsetf, 6*4);
+            for(int i = 0; i < 6 ; i ++){
+                setId(i,ids[i]);
+                setMean(i,means[i]);
+                setSlope(i,slopes[i]);
+                //System.out.println(" setting slope " + i + " = " + slopes[i] + " , read back = " + getSlope(i));
+            }
+        }
+    }
+    
     public String toOrderedString(int[] order){
         StringBuilder str = new StringBuilder();
         int size = cBuffer.getInt(0);
@@ -314,6 +362,10 @@ public class ClusterCombinations {
         str.append(" ) ( ");
         for(int k = 0; k < 6; k++){
             str.append(String.format("%6.2f ", getMean(k)));
+        }
+        str.append(" ) ( ");
+        for(int k = 0; k < 6; k++){
+            str.append(String.format("%6.2f ", getSlope(k)));
         }
         str.append(" )");
         return str.toString();
@@ -357,6 +409,10 @@ public class ClusterCombinations {
                 str.append(" ) ( ");
                 for(int k = 0; k < 6; k++){
                     str.append(String.format("%6.2f ", getMean(k)));
+                }
+                str.append(" ) ( ");
+                for(int k = 0; k < 6; k++){
+                    str.append(String.format("%6.2f ", getSlope(k)));
                 }
                 str.append(" )\n");
             }
@@ -422,7 +478,8 @@ public class ClusterCombinations {
             if(statusList.contains(status)==true){
                 int[] ids = this.getLabels(i);
                 double[] featurs = this.getFeatures(i);
-                comb.add(ids, featurs);
+                double[] slopes = this.getSlopes(i);
+                comb.add(ids, featurs,slopes);
                 int size = comb.getSize();
                 comb.setRow(size-1).setProbability(setRow(i).getProbability());
                 comb.setRow(size-1).setStatus(status);

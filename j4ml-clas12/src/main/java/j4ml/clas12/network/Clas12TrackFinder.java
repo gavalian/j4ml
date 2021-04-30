@@ -81,6 +81,11 @@ public class Clas12TrackFinder {
        return null;
     }
     
+    
+    public NeuralNetworkTracking getNetwork(){
+        return this.neuralNetworkTracker;
+    }
+    
     private String getPathWithEnvironment(String relative){
        if(envDirectory==null) return relative;
        if(System.getenv(envDirectory)!=null) return System.getenv(envDirectory)+"/"+relative;
@@ -114,15 +119,17 @@ public class Clas12TrackFinder {
                 int id     = bank.getInt("id", i);
                 int superlayer = bank.getInt("superlayer", i);
                 double wire = bank.getFloat("avgWire", i);
+                double slope = bank.getFloat("fitSlope", i);
                 if(sector==sec){
-                    store.add(superlayer-1, id, wire);
+                    store.add(superlayer-1, id, wire,slope);
                 }
         }
-        
+        //System.out.println(store.toString());
         combinations.reset();
         //combinations5.reset();
         store.getCombinationsFull(combinations);
         store.getCombinations(combinations5);
+        //System.out.println(combinations.getString(false));
     }
     
     public void process(Bank bank){
@@ -220,14 +227,42 @@ public class Clas12TrackFinder {
             
             String[] tokens = response.trim().split("\\s+");
             if(tokens.length==6){
+                
+                boolean needsFixing = false;
+                int        whichBin = -1;
                 float[] means = new float[6];
+                
                 for(int i = 0; i < 6; i++){
-                    means[i] = Float.parseFloat(tokens[i])/112.0f;                    
+                    float value = Float.parseFloat(tokens[i]);
+                    if(value<0.5){ needsFixing = true; whichBin = i;}
+                    means[i] = Float.parseFloat(tokens[i])/112.0f;                 
                 }
-                float[] output = finder.neuralNetworkTracker.getOutput(means);
-                for(int i = 0; i < output.length; i++)
-                    System.out.printf("%8.6f ",output[i]);
-                System.out.println();
+                
+                if(needsFixing==true){
+                    float[] fixedMeans = finder.neuralNetworkTracker.getFixedOutput(means);
+                    for(int i = 0 ; i < 6; i++){
+                        if(i==whichBin) means[i] = fixedMeans[i];
+                    }
+                    
+                    System.out.println("==>>> FIXING THE MISSING : ");
+                    
+                    for(int i = 0; i < means.length; i++)
+                        System.out.printf("%8.6f ",means[i]*112);
+                    
+                    System.out.println();
+
+                    float[] output = finder.neuralNetworkTracker.getOutput(means);
+                    
+                    for(int i = 0; i < output.length; i++)
+                        System.out.printf("%8.6f ",output[i]);
+                    System.out.println();
+                    
+                } else {
+                    float[] output = finder.neuralNetworkTracker.getOutput(means);
+                    for(int i = 0; i < output.length; i++)
+                        System.out.printf("%8.6f ",output[i]);
+                    System.out.println();
+                }
             }
             if(response.compareTo("q")==0||response.compareTo("Q")==0) exitLoop = true;
         }
@@ -276,6 +311,12 @@ public class Clas12TrackFinder {
         System.out.println("\n############ ai predictions ###################################");
         System.out.println(finder.getResults().toString());
         System.out.println("\n");
+        
+        //System.out.println(finder.combinations5.getString(false));
+        
+        //System.out.println("THE CLUSTER STORE");
+        //System.out.println(finder.store);
+        
     }
     
     public static void main(String[] args){

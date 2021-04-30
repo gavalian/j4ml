@@ -169,15 +169,19 @@ public class TrackDataExtractor {
                                               (float)means[4],
                                               (float) means[5]}
                                   );
-                                  outEvent.setEventTag(bin+1);
+                                  
+                                  int chargeBin = bin+1;
+                                  
+                                  if(t.charge<0) chargeBin += 20;
+                                  outEvent.setEventTag(chargeBin);
                                   for(Node n : nodes) outEvent.write(n);
                                   outEvent.write(negativeNode);
-                                  //writer.addEvent(outEvent,bin+1);
-                                  if(t.charge>0){
+                                  writer.addEvent(outEvent,chargeBin);
+                                  /*if(t.charge>0){
                                       writer.addEvent(outEvent,1);
                                   } else {
                                       writer.addEvent(outEvent,0);
-                                  }
+                                  }*/
                               }
                           }
                       }

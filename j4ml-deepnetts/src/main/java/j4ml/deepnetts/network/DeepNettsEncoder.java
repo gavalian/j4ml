@@ -177,6 +177,31 @@ public class DeepNettsEncoder {
         }
         return dataset;
     }
+    
+    public List<String>  getNetworkStream(){
+        List<String> stream = new ArrayList<String>();
+         int nLayers = neuralNet.getLayers().size();
+        for(int i = 1; i < nLayers; i++){
+            System.out.println(neuralNet.getLayers().get(i-1).getWidth()
+                    +","+neuralNet.getLayers().get(i).getWidth());
+            stream.add(neuralNet.getLayers().get(i-1).getWidth()
+                    +","+neuralNet.getLayers().get(i).getWidth());
+            //System.out.println(DataSetReader.getString(neuralNet.getLayers().get(i).getWeights().getValues(),","));
+            float[] weigths = neuralNet.getLayers().get(i).getWeights().getValues();
+            int     width   = neuralNet.getLayers().get(i).getWidth();
+            int     widthP  = neuralNet.getLayers().get(i-1).getWidth();
+            for(int k = 0; k < widthP; k++){
+                System.out.println(DataSetReader.getString(neuralNet.getLayers().get(i).getWeights().getValues(),
+                        k*width, width,","));
+                stream.add(DataSetReader.getString(neuralNet.getLayers().get(i).getWeights().getValues(),
+                        k*width, width,","));
+            }
+            //System.out.println(DataSetReader.getString(neuralNet.getLayers().get(i).getBiases(),","));
+            stream.add(DataSetReader.getString(neuralNet.getLayers().get(i).getBiases(),","));
+        }
+        return stream;
+    }
+    
     public void save(String filename){
         TextFileWriter writer = new TextFileWriter();
         writer.open(filename);

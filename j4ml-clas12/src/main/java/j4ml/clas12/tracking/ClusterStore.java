@@ -44,6 +44,9 @@ public class ClusterStore {
         layerClusters.get(layer).add(id, mean);
     }
     
+     public void add(int layer, int id, double mean, double slope){
+        layerClusters.get(layer).add(id, mean,slope);
+    }
     public void reset(){
         for(int i = 0; i < 6; i++) layerClusters.get(i).reset();
     }
@@ -51,7 +54,9 @@ public class ClusterStore {
     public void getCombinationsFull(ClusterCombinations comb){
         comb.reset();
         int[] ids      = new int[6];
-        double[] means = new double[6];            
+        double[] means = new double[6];    
+        double[] slopes = new double[6];
+        
         for(int l1 = 0; l1 < layerClusters.get(0).getSize(); l1++){
             for(int l2 = 0; l2 < layerClusters.get(1).getSize(); l2++){
                 for(int l3 = 0; l3 < layerClusters.get(2).getSize(); l3++){
@@ -61,21 +66,29 @@ public class ClusterStore {
                                 
                                 ids[0] = layerClusters.get(0).getId(l1);
                                 means[0] = layerClusters.get(0).getMean(l1);
+                                slopes[0] = layerClusters.get(0).getSlope(l1);
                                 
                                 ids[1] = layerClusters.get(1).getId(l2);
                                 means[1] = layerClusters.get(1).getMean(l2);
+                                slopes[1] = layerClusters.get(1).getSlope(l2);
                                 
                                 ids[2] = layerClusters.get(2).getId(l3);
                                 means[2] = layerClusters.get(2).getMean(l3);
+                                slopes[2] = layerClusters.get(2).getSlope(l3);
                                 
                                 ids[3] = layerClusters.get(3).getId(l4);
                                 means[3] = layerClusters.get(3).getMean(l4);
+                                slopes[3] = layerClusters.get(3).getSlope(l4);
                                 
                                 ids[4] = layerClusters.get(4).getId(l5);
                                 means[4] = layerClusters.get(4).getMean(l5);
+                                slopes[4] = layerClusters.get(4).getSlope(l5);
                                 
                                 ids[5] = layerClusters.get(5).getId(l6);
                                 means[5] = layerClusters.get(5).getMean(l6);
+                                slopes[5] = layerClusters.get(5).getSlope(l6);
+                                
+                                
                                 if(Math.abs(means[0]- means[1])<25.0&&
                                         Math.abs(means[2]- means[3])<25.0&&
                                         Math.abs(means[4]- means[5])<25.0){
@@ -86,11 +99,12 @@ public class ClusterStore {
                                     if(this.trackWidthRejection==true){
                                         if(Math.abs(m1-m2)<25.&&Math.abs(m2-m3)<65.&&
                                                 Math.abs(m3-m1)<65.){
-                                            comb.add(ids, means);
+                                            comb.add(ids, means,slopes);
                                         }
                                     } else {
-                                        comb.add(ids, means);
+                                        comb.add(ids, means,slopes);
                                     }
+                                    //comb.add(ids, means);
                                 }
                             }
                         }
@@ -104,6 +118,7 @@ public class ClusterStore {
             comb.reset();
             int[] ids      = new int[6];
             double[] means = new double[6];            
+            double[] slopes = new double[6];
             for(int i = 0; i < 6; i++){
                 for(int l1 = 0; l1 < layerClusters.get(patterns[i][0]).getSize(); l1++){
                     for(int l2 = 0; l2 < layerClusters.get(patterns[i][1]).getSize(); l2++){
@@ -113,33 +128,41 @@ public class ClusterStore {
                                     
                                     ids[patterns[i][0]] = layerClusters.get(patterns[i][0]).getId(l1);
                                     means[patterns[i][0]] = layerClusters.get(patterns[i][0]).getMean(l1);
+                                    slopes[patterns[i][0]] = layerClusters.get(patterns[i][0]).getSlope(l1);
                                     
                                     ids[patterns[i][1]] = layerClusters.get(patterns[i][1]).getId(l2);
                                     means[patterns[i][1]] = layerClusters.get(patterns[i][1]).getMean(l2);
+                                    slopes[patterns[i][1]] = layerClusters.get(patterns[i][1]).getSlope(l2);
                                     
                                     ids[patterns[i][2]] = layerClusters.get(patterns[i][2]).getId(l3);
                                     means[patterns[i][2]] = layerClusters.get(patterns[i][2]).getMean(l3);
+                                    slopes[patterns[i][2]] = layerClusters.get(patterns[i][2]).getSlope(l3);
                                     
                                     ids[patterns[i][3]] = layerClusters.get(patterns[i][3]).getId(l4);
                                     means[patterns[i][3]] = layerClusters.get(patterns[i][3]).getMean(l4);
+                                    slopes[patterns[i][3]] = layerClusters.get(patterns[i][3]).getSlope(l4);
                                     
                                     ids[patterns[i][4]] = layerClusters.get(patterns[i][4]).getId(l5);
                                     means[patterns[i][4]] = layerClusters.get(patterns[i][4]).getMean(l5);
+                                    slopes[patterns[i][4]] = layerClusters.get(patterns[i][4]).getSlope(l5);
+                                    
                                     
                                     ids[missing[i]] = 0;
                                     means[missing[i]] = 0.0;
+                                    slopes[missing[i]] = 0.0;
+                                    
                                      if((i==0||i==1)&&Math.abs(means[2]-means[3])<25.0&&
                                             Math.abs(means[4]-means[5])<25.0){
-                                        comb.add(ids, means);
+                                        comb.add(ids, means,slopes);
                                     }
                                     
                                     if((i==2||i==3)&&Math.abs(means[0]-means[1])<25.0&&
                                             Math.abs(means[4]-means[5])<25.0){
-                                        comb.add(ids, means);
+                                        comb.add(ids, means,slopes);
                                     }
                                     if((i==4||i==5)&&Math.abs(means[0]-means[1])<25.0&&
                                             Math.abs(means[2]-means[3])<25.0){
-                                        comb.add(ids, means);
+                                        comb.add(ids, means,slopes);
                                     }
                                     //comb.add(ids, means);
                                 }
@@ -222,7 +245,7 @@ public class ClusterStore {
         
         private ByteBuffer buffer = null;
         private int        defaultSize = 512;
-        private int        BYTES_PER_ENTRY = 8;        
+        private int        BYTES_PER_ENTRY = 12;
         
         public ClusterList(){
             byte[] array = new byte[defaultSize*BYTES_PER_ENTRY+4];
@@ -238,8 +261,12 @@ public class ClusterStore {
             return buffer.getFloat(4 + row * BYTES_PER_ENTRY + 4);
         }
         
+        public double getSlope(int row){
+            return buffer.getFloat(4 + row * BYTES_PER_ENTRY + 8);
+        }
+        
         public int getSize(){
-            return buffer.getInt(0);            
+            return buffer.getInt(0);
         }
         
         public void add(int id, double mean){
@@ -249,20 +276,25 @@ public class ClusterStore {
             buffer.putFloat(id_offset+4, (float) mean);
             row++;
             buffer.putInt(0,row);
-        }
-    
+        }    
         
+        public void add(int id, double mean, double slope){
+            int row = buffer.getInt(0);
+            int id_offset = 4 + row * BYTES_PER_ENTRY;
+            buffer.putInt(id_offset, id);
+            buffer.putFloat(id_offset+4, (float) mean);
+            buffer.putFloat(id_offset+8, (float) slope);
+            row++;
+            buffer.putInt(0,row);
+        }  
         public void reset(){ buffer.putInt(0, 0);}
-        
-        
-        
         
         @Override
         public String toString(){
             StringBuilder str = new StringBuilder();
             int size = getSize();
             for(int i = 0; i < size ; i++){
-                str.append(String.format("(%4d, %6.2f) ", getId(i),getMean(i)));
+                str.append(String.format("(%4d, %6.2f, %6.3f) ", getId(i),getMean(i),getSlope(i)));
             }
             return str.toString();
         }
@@ -271,15 +303,15 @@ public class ClusterStore {
     
     public static void main(String[] args){
         ClusterStore store = new ClusterStore();
-        store.add(0, 1, 0.5);
+        store.add(0, 1, 0.5,0.1);
         //store.add(0, 11, 0.5);
         //store.add(0, 12, 0.5);
         //store.add(0, 14, 0.5);
-        store.add(1, 2, 0.5);
-        store.add(1, 32, 0.5);
-        store.add(1, 33, 0.5);
-        store.add(2, 3, 0.5);
-        store.add(3, 4, 0.5);
+        store.add(1, 2, 0.5,0.2);
+        store.add(1, 32, 0.5,0.3);
+        store.add(1, 33, 0.5,0.4);
+        store.add(2, 3, 0.5,0.5);
+        store.add(3, 4, 0.5,0.6);
         store.add(4, 5, 0.5);
         //store.add(4, 45, 0.5);
         store.add(5, 6, 0.5);
@@ -348,7 +380,7 @@ public class ClusterStore {
             System.out.printf("%4d : %4d\n", i , order[i]);
         }
         
-        System.out.println(comb);
+        System.out.println(comb.getString(false));
         
         order = comb.sort();
         System.out.println(comb.toOrderedString(order));

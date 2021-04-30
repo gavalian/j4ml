@@ -14,15 +14,14 @@ import java.util.Map;
  */
 public class AxisCounter {
     
-    int[]  buffer = null;
+    int[]      buffer = null;
     double  axisStep  = 0.0;
     double  axisMin   = 0.0;
     
     public AxisCounter(int bins, double min, double step){
         buffer = new int[bins]; axisStep = step; axisMin = min;
     }
-    
-    
+        
     public int getBin(double value){
         int index = -1;
         //return (int) (buffer.length*(value-axisMin)*axisStep);
@@ -50,6 +49,13 @@ public class AxisCounter {
             
         }
         return axis;
+    }
+    public int  integral(){
+        int summ = 0;
+        for(int i = 0; i < buffer.length; i++){
+            summ += buffer[i];
+        }
+        return summ;
     }
     
     public static Map<String,Double>  getRatio(AxisCounter a, AxisCounter b){

@@ -8,6 +8,7 @@ package j4ml.clas12.stats;
 import j4ml.clas12.network.Clas12TrackFinder;
 import j4ml.clas12.tracking.ClusterCombinations;
 import j4ml.clas12.tracking.Track;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,8 @@ public class Clas12TrackValidation {
     Bank   bankParticlesAI  = null;
     
     boolean showHistograms = true;
+    List<AxisCounter>  counterList = new ArrayList<>();
+    
     
     public Clas12TrackValidation(){
         finder = Clas12TrackFinder.createEJML();        
@@ -61,14 +64,15 @@ public class Clas12TrackValidation {
     }
     
     public void init(HipoReader reader){
+        
         bankTracksTB   = reader.getBank("TimeBasedTrkg::TBTracks");
         bankTracksAI   = reader.getBank("TimeBasedTrkg::AITracks");
         bankClustersTB = reader.getBank("TimeBasedTrkg::TBClusters");
         bankClustersAI = reader.getBank("TimeBasedTrkg::AIClusters");
         bankClustersHB = reader.getBank("HitBasedTrkg::HBClusters");
         
-        bankParticles = reader.getBank("REC::Particle");
-        bankParticlesAI = reader.getBank("RECAI::Particle");
+        //bankParticles = reader.getBank("REC::Particle");
+        //bankParticlesAI = reader.getBank("RECAI::Particle");
         
         stats.addMetrics("positive");
         stats.addMetrics("negative");
@@ -76,6 +80,104 @@ public class Clas12TrackValidation {
         stats.addMetrics("negative (6 SL) AI");
         stats.addMetrics("positive (5 SL)");
         stats.addMetrics("negative (5 SL)");
+        
+        for(int i = 0 ; i < 12; i++ ) this.counterList.add(new AxisCounter(20,0.0,0.5));
+    }
+    
+    public void processEventAnalyze(Event event){
+        
+        event.read(bankTracksTB);
+        //event.read(bankTracksAI);
+        
+        event.read(bankClustersTB);
+        //event.read(bankClustersAI);
+        
+        event.read(bankClustersHB);
+        
+        //finder.process(bankClustersHB);
+        
+        finder.process(bankClustersTB);
+        
+        ClusterCombinations result = finder.getResults();
+
+        List<Track>       tracks = Track.read(bankTracksTB,bankClustersTB);
+        List<Track>  validTracks = Track.getComplete(tracks);
+        
+        for(int i = 0; i < validTracks.size(); i++){
+            Track t = validTracks.get(i);
+            int[] clusters = validTracks.get(i).clusters;
+             if(t.charge<0) {
+                   counterList.get(0).fill(t.vector.mag());
+               } else {
+                   counterList.get(1).fill(t.vector.mag());
+               }
+            if(result.find(clusters)>=0){
+               if(t.charge<0) {
+                   counterList.get(2).fill(t.vector.mag());
+               } else {
+                   counterList.get(3).fill(t.vector.mag());
+               }
+            } else {
+                
+                float[] features = validTracks.get(i).getFeatures();
+                float[]   output = finder.getNetwork().getOutput(features);
+                
+                if(t.charge<0){
+                    if(output[1]>0.8){
+                        counterList.get(5).fill(t.vector.mag());
+                        if(output[1]>0.9) counterList.get(4).fill(t.vector.mag());
+                    } else {
+                        if(output[1]<0.5) counterList.get(8).fill(t.vector.mag());
+                    }
+                    
+                   
+                } else {
+                    
+                    if(output[2]>0.8){
+                        counterList.get(7).fill(t.vector.mag());
+                        if(output[2]>0.9) counterList.get(6).fill(t.vector.mag());
+                    } else {
+                        if(output[2]<0.5) counterList.get(9).fill(t.vector.mag());
+                    }
+                }
+                System.out.println("------------------------------------");
+                System.out.println(" track not found");
+                System.out.println(validTracks.get(i));
+                for(int k = 0; k < output.length; k++) System.out.printf("%8.5f ",output[k]);
+                System.out.println();
+                System.out.println(result);
+            }
+        }
+    }
+    
+    public void printStats(){
+        
+        int ntracks = counterList.get(0).integral();
+        int ntracksMatched = counterList.get(2).integral();
+        int ntracksValidated90 = counterList.get(4).integral();
+        int ntracksValidated80 = counterList.get(5).integral();
+        int unMatched = counterList.get(8).integral();
+        System.out.println("+-------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+");
+        System.out.printf("|    negative | %9d | %9d | %9d | %9d | %9d | %9.6f | %9.6f |\n",
+                counterList.get(0).integral(),counterList.get(2).integral(),
+                counterList.get(4).integral(),counterList.get(5).integral(),
+                unMatched,
+                ((double) ntracksMatched)/ntracks,
+                ((double) (ntracksMatched + ntracksValidated80))/ntracks
+        );
+        ntracks = counterList.get(1).integral();
+        ntracksMatched = counterList.get(3).integral();
+        ntracksValidated90 = counterList.get(6).integral();
+        ntracksValidated80 = counterList.get(7).integral();
+        unMatched = counterList.get(9).integral();
+        System.out.printf("|    positive | %9d | %9d | %9d | %9d | %9d | %9.6f | %9.6f |\n",
+                counterList.get(1).integral(),counterList.get(3).integral(),
+                counterList.get(6).integral(),counterList.get(7).integral(),
+                unMatched,
+                ((double) ntracksMatched)/ntracks,
+                ((double) (ntracksMatched + ntracksValidated80))/ntracks
+        );
+        System.out.println("+-------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+");
     }
     
     public void processEvent(Event event){
@@ -216,11 +318,16 @@ public class Clas12TrackValidation {
         while(reader.hasNext()){
             counter++;
             reader.nextEvent(event);
-            processEvent(event);
+            //processEvent(event);
+            //System.out.println("--- # " + counter);
+            processEventAnalyze(event);
             if(max>0&&counter>max) break;
         }
         
         System.out.println("FILE: " + filename);
+        
+        this.printStats();
+        /*
         stats.show();
         finder.showStatistics();
         
@@ -237,7 +344,7 @@ public class Clas12TrackValidation {
             System.out.println("--------------- negatives --------------------");
             hist.setData(mapNeg);
             hist.print();
-        }        
+        } */       
     }
     
     public void processFile(String filename){
@@ -245,6 +352,7 @@ public class Clas12TrackValidation {
     }
     
     public static void main(String[] args){
+                        
         OptionParser parser = new OptionParser();
         parser.addOption("-dir","CLAS12DIR", "enviroment directory where network files are located");
         parser.addOption("-n","25000", "number of events to process");

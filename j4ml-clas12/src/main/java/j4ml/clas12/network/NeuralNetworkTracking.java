@@ -16,6 +16,7 @@ public abstract class NeuralNetworkTracking {
     
     public abstract void init(List<String> fileList);        
     public abstract float[] getOutput(float[] features);
+    public abstract float[] getFixedOutput(float[] features);
     public abstract void classify(ClusterCombinations comb);
     public abstract void fix(ClusterCombinations comb);
     public abstract void evaluate(ClusterCombinations comb);

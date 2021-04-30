@@ -16,9 +16,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -60,12 +63,43 @@ public class ZipReader {
         }
         return entryLines;
     }
+    protected String[] splitFilePath(String path){
+        int position = path.lastIndexOf("/");
+        if(position>0){
+            String pathTo = path.substring(0, position);
+            String file   = path.substring(position+1);
+            return new String[]{pathTo,file};
+        }
+        return null;
+    }
+    
+    public Set<String> getDirectoryList(String zipFileName, String filter){
+        
+        Set<String> entryLines = new HashSet<>();
+        try (FileInputStream fis = new FileInputStream(zipFileName);
+                BufferedInputStream bis = new BufferedInputStream(fis);
+                ZipInputStream stream = new ZipInputStream(bis)) {
+            
+            ZipEntry entry;
+            while ((entry = stream.getNextEntry()) != null) {
+                String[] path = this.splitFilePath(entry.getName());
+                boolean match = Pattern.matches(filter, path[0]);
+                
+                //System.out.println("entry -> [" + path[0] + "] [" + path[1] + 
+                //        " ], type = " + entry.isDirectory() + ", match = " + match);
+                if(match==true){                                        
+                    entryLines.add(entry.getName());
+                }
+            }
+        } catch (Exception e){
+        }
+        return entryLines;
+    }
     
     public List<String> readTxt(String zipFileName, String filename){
         List<String> entryLines = new ArrayList<>();
         try {
             byte[] buffer = new byte[2048];
-            
             
             ZipFile zipFile = new ZipFile(zipFileName);
             ZipEntry entry  = zipFile.getEntry(filename);
@@ -77,8 +111,7 @@ public class ZipReader {
             while( (line = br.readLine()) != null){
                 entryLines.add(line);
             }
-            
-            
+                        
             /*int nread = entry.read(buffer);
             while(nread>0){
             String line = new String(buffer,0,nread);
@@ -121,7 +154,7 @@ public class ZipReader {
             System.out.println(i + " : " + lines.get(i));
         }*/
         
-        List<String> lines2 = reader.readTxt("etc/ejml/ejmlData.zip","network/5038/trackClassifier.network");
+        /*List<String> lines2 = reader.readTxt("etc/ejml/ejmlData.zip","network/5038/trackClassifier.network");
         System.out.println(" size = " + lines2.size());
         for(int i = 0; i < lines2.size(); i++){
             System.out.println(i + " : " + lines2.get(i));
@@ -131,6 +164,12 @@ public class ZipReader {
         lines.add("address:");
         lines.add("phone:");
         lines.add("email:");        
-        reader.writeTxt("etc/ejml/ejmlData.zip",lines);
+        reader.writeTxt("etc/ejml/ejmlData.zip",lines);*/
+        
+        Set<String> list = reader.getDirectoryList("../j4ml-deepnetts/ejmlclas12.network", ".*/.*/default");
+        
+        for(String item : list){
+            System.out.println(" ->  " + item);
+        }
     }
 }
