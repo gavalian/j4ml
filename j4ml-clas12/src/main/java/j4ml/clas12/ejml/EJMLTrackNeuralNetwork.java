@@ -8,6 +8,7 @@ package j4ml.clas12.ejml;
 import j4ml.clas12.network.NeuralNetworkTracking;
 import j4ml.clas12.tracking.ClusterCombinations;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -97,6 +98,16 @@ public class EJMLTrackNeuralNetwork extends NeuralNetworkTracking {
         networkClassifier = new EJMLModelEvaluator(fileList.get(0));
         System.out.println("[EJML-NN] >> reading fixer  file : " + fileList.get(1));
         networkFixer = new EJMLModelEvaluator(fileList.get(1));
+    }
+    
+    public void initFromArchive(String zipFile, int run, String flavor){
+        Map<String,String>  dataFiles = new HashMap<>();
+        dataFiles.put("classifier", "trackClassifier.network");
+        dataFiles.put("fixer", "trackFixer.network");
+        ArchiveProvider provider = new ArchiveProvider(zipFile);
+        int adjustedRun = provider.findEntry(run);
+        String directory = String.format("network/%d/%s",adjustedRun,flavor);
+        this.initZip(zipFile,directory, dataFiles);
     }
     
     public void initZip(String zipFile, String directory, Map<String,String> mlFiles){

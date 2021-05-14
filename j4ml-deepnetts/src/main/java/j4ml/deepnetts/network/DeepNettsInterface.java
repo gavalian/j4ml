@@ -35,7 +35,23 @@ public class DeepNettsInterface {
 
     }
     
+    
+    public static void verifyFile(String zipFile, String filename){
+        boolean status = ArchiveUtils.hasFile(zipFile, filename);
+        if(status==true){
+            System.out.printf("\n\nERROR: file with the name already exists in the archive\n");
+            System.out.printf("ERROR: remove the file by using command below\n\n");            
+            System.out.printf("./bin/run-deepnetts.sh -remove -network %s -file %s\n\n",zipFile,filename);
+            System.exit(0);
+        }
+    }
+    
     public static void trainClassifier(String filename, String zipFileName, Integer run, NetworkFlavor flavor, int nepochs, int max, boolean balance){
+        
+        
+        String outputFile = String.format("network/%s/%s/trackClassifier.network", run.toString(), flavor.getName());
+        
+        DeepNettsInterface.verifyFile(zipFileName, outputFile);
         
         DataSet inputData = HipoDataLoader.readDataSet(filename, max);
         
@@ -54,12 +70,15 @@ public class DeepNettsInterface {
         
         //classifier.save("trackClassifier.network");
         List<String> networkStream = classifier.getNetworkStream();
-        String outputFile = String.format("network/%s/%s/trackClassifier.network", run.toString(), flavor.getName());
+        
         ArchiveUtils.addInputStream(zipFileName, outputFile, networkStream);
     }
     
     public static void trainFixer(String filename, String zipFileName, Integer run, NetworkFlavor flavor, int nepochs, int max, boolean balance){
-        
+
+        String outputFile = String.format("network/%s/%s/trackFixer.network", run.toString(), flavor.getName());
+
+        DeepNettsInterface.verifyFile(zipFileName, outputFile);
         /*List<float[]> trainList = 
                 DataSetReader.readHipo(filename, max);
         
@@ -81,7 +100,7 @@ public class DeepNettsInterface {
         //encoder.save("trackFixer.network");
         List<String> networkStream = encoder.getNetworkStream();
         
-        String outputFile = String.format("network/%s/%s/trackFixer.network", run.toString(), flavor.getName());
+
         ArchiveUtils.addInputStream(zipFileName, outputFile, networkStream);
         //ArchiveUtils.addInputStream(zipFileName, run, "trackFixer.network", networkStream);
         //AutoEncoderMetrics metrics = new AutoEncoderMetrics();        
@@ -90,9 +109,11 @@ public class DeepNettsInterface {
     
     public static void main(String[] args){
         //DeepNettsInterface.trainClassifierLSVM("dc_combined_sample_70k.lsvm","dc_combined_sample_70k_test.lsvm", 5000);        
-        OptionStore store = new OptionStore("deep-netts");
+        OptionStore store = new OptionStore("run-deepnetts.sh");
         store.addCommand("-classifier", "train a classifier network");
         store.addCommand("-fixer", "train a classifier network");      
+        store.addCommand("-remove", "remove file from archive");
+        store.addCommand("-list", "list files in the archive");
         
         store.getOptionParser("-classifier").addOption("-b", "false", "balance the data sample");
         store.getOptionParser("-classifier").addOption("-e", "240", "number of epochs to train");
@@ -108,7 +129,26 @@ public class DeepNettsInterface {
         store.getOptionParser("-fixer").addOption("-max", "-1", "maximum number of samples to load");
         store.getOptionParser("-fixer").addOption("-flavor","default","flavor of the network");
         
+        store.getOptionParser("-remove").addRequired("-network","network file name");        
+        store.getOptionParser("-remove").addRequired("-file","file name to remove");
+        
+        store.getOptionParser("-list").addRequired("-network","network file name"); 
         store.parse(args);
+        
+        if(store.getCommand().compareTo("-list")==0){
+            String  zipFile = store.getOptionParser("-list").getOption("-network").stringValue();
+            ArchiveUtils.list(zipFile, "*");
+        }
+        
+        if(store.getCommand().compareTo("-remove")==0){
+            String  zipFile = store.getOptionParser("-remove").getOption("-network").stringValue();
+            String filename = store.getOptionParser("-remove").getOption("-file").stringValue();
+            boolean success = ArchiveUtils.removeFile(zipFile, filename);
+            System.out.printf("\nremoving file : %s\n",filename);
+            if(success==true){
+                System.out.printf("      success : OK\n");
+            }
+        }
         
         if(store.getCommand().compareTo("-classifier")==0){
             List<String> input = store.getOptionParser("-classifier").getInputList();

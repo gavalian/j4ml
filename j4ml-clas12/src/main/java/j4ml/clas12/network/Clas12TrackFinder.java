@@ -20,6 +20,7 @@ import org.jlab.jnp.hipo4.data.Bank;
 import org.jlab.jnp.hipo4.data.Event;
 import org.jlab.jnp.hipo4.io.HipoReader;
 import org.jlab.jnp.hipo4.utils.HipoUtilities;
+import org.jlab.jnp.utils.options.OptionParser;
 
 /**
  *
@@ -55,9 +56,10 @@ public class Clas12TrackFinder {
     
     public static Clas12TrackFinder createEJML(String envDir, String file){
         Clas12TrackFinder finder = new Clas12TrackFinder();
-        EJMLTrackNeuralNetwork network = new EJMLTrackNeuralNetwork();
-        
-        Map<String,String>  files = new HashMap<String,String>();
+        /*EJMLTrackNeuralNetwork network = new EJMLTrackNeuralNetwork();
+        network.initFromArchive(file, 0, file);
+        */
+       /* Map<String,String>  files = new HashMap<String,String>();
         files.put("classifier", "trackClassifier.network");
         files.put("fixer", "trackFixer.network");
         finder.setEnvironment(envDir);
@@ -65,6 +67,14 @@ public class Clas12TrackFinder {
         String path = finder.getPathWithEnvironment(file);
         network.initZip(path, "network/5038", files);
         
+        finder.setTrackingNetwork(network);*/
+        return finder;
+    }
+    
+    public static Clas12TrackFinder fromArchive(String archiveFile, int run, String flavor){
+        Clas12TrackFinder finder = new Clas12TrackFinder();
+        EJMLTrackNeuralNetwork network = new EJMLTrackNeuralNetwork();
+        network.initFromArchive(archiveFile,run,flavor);
         finder.setTrackingNetwork(network);
         return finder;
     }
@@ -219,9 +229,9 @@ public class Clas12TrackFinder {
         return line;
     }
     
-    public static void cli(){
+    public static void cli(String archive, int run, String flavor){
         boolean exitLoop = false;
-        Clas12TrackFinder finder = Clas12TrackFinder.createEJML("CLAS12DIR","etc/ejml/ejmlclas12.network");
+        Clas12TrackFinder finder = Clas12TrackFinder.fromArchive(archive, run, flavor);
         while(exitLoop==false){
             String response = HipoUtilities.waitForInput();
             
@@ -268,9 +278,9 @@ public class Clas12TrackFinder {
         }
     }
     
-    public static void debug(String filename, int nevent, String level, String networkFile){
+    public static void debug(String filename, int nevent, String level, String networkFile, int run, String flavor){
         
-        Clas12TrackFinder finder = Clas12TrackFinder.createEJML("CLAS12DIR",networkFile);
+        Clas12TrackFinder finder = Clas12TrackFinder.fromArchive(networkFile, run, flavor);
         /*finder.init(Arrays.asList(
                 //"etc/ejml/trackClassifierModel.csv",
                 "etc/ejml/trackClassifier.network",
@@ -320,9 +330,37 @@ public class Clas12TrackFinder {
     }
     
     public static void main(String[] args){
+         
+        OptionParser parser = new OptionParser();
+        parser.addRequired("-network", "network file name"); 
+        parser.addOption("-flavor", "default","network flavor"); 
+        parser.addOption("-level", "HB","cluster level to use (\"HB\" or \"TB\")"); 
+        parser.addRequired("-e","network flavor"); 
+
+        parser.addOption("-cli", "false","run in CLI mode"); 
+        parser.addOption("-run", "5038","run in CLI mode"); 
         
-        String filename = args[0];
-        if(filename.compareTo("cli")==0){
+        parser.parse(args);
+        
+        String cli = parser.getOption("-cli").stringValue();
+        int    run = parser.getOption("-run").intValue();
+        int    event = parser.getOption("-e").intValue();
+        String flavor = parser.getOption("-flavor").stringValue();
+        
+        if(cli.compareTo("false")==0){
+            System.out.println("--- running DEBUG ----");
+             List<String> filename = parser.getInputList();
+             String network = parser.getOption("-network").stringValue();
+             String level = parser.getOption("-level").stringValue();            
+            Clas12TrackFinder.debug(filename.get(0), event, level, network, run , flavor);             
+        } else {
+            System.out.println("--- running CLI ----");
+            String network = parser.getOption("-network").stringValue();                    
+            Clas12TrackFinder.cli(network,run,flavor);
+        }        
+        
+        
+        /*if(filename.compareTo("cli")==0){
             Clas12TrackFinder.cli();
         } else {
             Integer nevent  = Integer.parseInt(args[1]);
@@ -336,7 +374,7 @@ public class Clas12TrackFinder {
                 network = args[3];
             }
             Clas12TrackFinder.debug(filename, nevent,level, network);
-        }
+        }*/
         //Clas12TrackFinder finder = new Clas12TrackFinder();
         /*
         Clas12TrackFinder finder = Clas12TrackFinder.createEJML();

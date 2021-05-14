@@ -16,6 +16,7 @@ import org.jlab.jnp.hipo4.data.Node;
 import org.jlab.jnp.hipo4.io.HipoChain;
 import org.jlab.jnp.hipo4.io.HipoWriter;
 import org.jlab.jnp.hipo4.io.HipoWriterSorted;
+import org.jlab.jnp.utils.options.OptionStore;
 
 /**
  *
@@ -99,32 +100,44 @@ public class TrackDataExtractor {
     
     public static void main(String[] args){
         
-        List<String> filesList = new ArrayList<>();
         
-        String filename = "/Users/gavalian/Work/DataSpace/raw/out_ai_005038.00165-00169.hipo";
-        for(int i = 0; i < args.length; i++){
+        OptionStore storeParser = new OptionStore("run-extract.sh");
+        storeParser.addCommand("-extract", "extract training file from cooked data files");
+        storeParser.getOptionParser("-extract").addRequired("-o","Output file name");
+        
+        
+        storeParser.parse(args);
+        
+        if(storeParser.getCommand().compareTo("-extract")==0){
+
+            String output = storeParser.getOptionParser("-extract").getOption("-o").stringValue();
+        
+            List<String> filesList = storeParser.getOptionParser("-extract").getInputList();//new ArrayList<>();
+        
+            /* String filename = "/Users/gavalian/Work/DataSpace/raw/out_ai_005038.00165-00169.hipo";
+            for(int i = 0; i < args.length; i++){
             filesList.add(args[i]);
-        }
-        
-        HipoChain chain = new HipoChain();
-        
-        //chain.addFile(filename);
-        chain.addFiles(filesList);
-        chain.open();
-        
-        Bank tBank = chain.getBank("TimeBasedTrkg::TBTracks");
-        Bank cBank = chain.getBank("TimeBasedTrkg::TBClusters");
-        Bank hBank = chain.getBank("HitBasedTrkg::HBClusters");
-        
-        Event event = new Event();
-        Event outEvent = new Event();
-        
-        HipoWriterSorted writer = new HipoWriterSorted();
-        
-        writer.open("extract_output.hipo");
-        
-        int counter = 0;
-        //for(int i = 0; i < 10000; i++){
+            }*/
+            
+            HipoChain chain = new HipoChain();
+            
+            //chain.addFile(filename);
+            chain.addFiles(filesList);
+            chain.open();
+            
+            Bank tBank = chain.getBank("TimeBasedTrkg::TBTracks");
+            Bank cBank = chain.getBank("TimeBasedTrkg::TBClusters");
+            Bank hBank = chain.getBank("HitBasedTrkg::HBClusters");
+            
+            Event event = new Event();
+            Event outEvent = new Event();
+            
+            HipoWriterSorted writer = new HipoWriterSorted();
+            
+            writer.open(output);//"extract_output.hipo");
+            
+            int counter = 0;
+            //for(int i = 0; i < 10000; i++){
         // while(chain.hasNext()&&counter<1000){  
         ClusterStore store = new ClusterStore();
         ClusterCombinations comb = new ClusterCombinations();
@@ -191,5 +204,6 @@ public class TrackDataExtractor {
         
         System.out.println("processed event = " + counter);
         writer.close();
+        }
     }
 }

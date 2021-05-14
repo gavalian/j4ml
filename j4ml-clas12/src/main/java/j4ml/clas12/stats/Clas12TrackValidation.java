@@ -15,6 +15,7 @@ import java.util.Map;
 import org.jlab.jnp.hipo4.data.Bank;
 import org.jlab.jnp.hipo4.data.Event;
 import org.jlab.jnp.hipo4.io.HipoReader;
+import org.jlab.jnp.utils.benchmark.ProgressPrintout;
 import org.jlab.jnp.utils.data.TextHistogram;
 import org.jlab.jnp.utils.options.OptionParser;
 
@@ -42,12 +43,13 @@ public class Clas12TrackValidation {
     List<AxisCounter>  counterList = new ArrayList<>();
     
     
-    public Clas12TrackValidation(){
-        finder = Clas12TrackFinder.createEJML();        
+    public Clas12TrackValidation(String archiveFile, int run, String flavor){
+        //finder = Clas12TrackFinder.createEJML();    
+        finder = Clas12TrackFinder.fromArchive(archiveFile, run, flavor);
         //finder.init(Arrays.asList("etc/ejml/trackClassifierModel.csv",
         //        "etc/ejml/trackFixerModel.csv"));
-        finder.init(Arrays.asList("trackClassifier.network",
-                "trackFixer.network"));
+        /*finder.init(Arrays.asList("trackClassifier.network",
+                "trackFixer.network"));*/
     }
     
     public Clas12TrackValidation(String envDir){
@@ -66,9 +68,9 @@ public class Clas12TrackValidation {
     public void init(HipoReader reader){
         
         bankTracksTB   = reader.getBank("TimeBasedTrkg::TBTracks");
-        bankTracksAI   = reader.getBank("TimeBasedTrkg::AITracks");
+        //bankTracksAI   = reader.getBank("TimeBasedTrkg::AITracks");
         bankClustersTB = reader.getBank("TimeBasedTrkg::TBClusters");
-        bankClustersAI = reader.getBank("TimeBasedTrkg::AIClusters");
+        //bankClustersAI = reader.getBank("TimeBasedTrkg::AIClusters");
         bankClustersHB = reader.getBank("HitBasedTrkg::HBClusters");
         
         //bankParticles = reader.getBank("REC::Particle");
@@ -102,6 +104,7 @@ public class Clas12TrackValidation {
 
         List<Track>       tracks = Track.read(bankTracksTB,bankClustersTB);
         List<Track>  validTracks = Track.getComplete(tracks);
+        //List<Track>  validTracks = Track.getValid(tracks);
         
         for(int i = 0; i < validTracks.size(); i++){
             Track t = validTracks.get(i);
@@ -111,6 +114,7 @@ public class Clas12TrackValidation {
                } else {
                    counterList.get(1).fill(t.vector.mag());
                }
+             
             if(result.find(clusters)>=0){
                if(t.charge<0) {
                    counterList.get(2).fill(t.vector.mag());
@@ -131,8 +135,7 @@ public class Clas12TrackValidation {
                     }
                     
                    
-                } else {
-                    
+                } else {                    
                     if(output[2]>0.8){
                         counterList.get(7).fill(t.vector.mag());
                         if(output[2]>0.9) counterList.get(6).fill(t.vector.mag());
@@ -140,12 +143,12 @@ public class Clas12TrackValidation {
                         if(output[2]<0.5) counterList.get(9).fill(t.vector.mag());
                     }
                 }
-                System.out.println("------------------------------------");
+                /*System.out.println("------------------------------------");
                 System.out.println(" track not found");
                 System.out.println(validTracks.get(i));
                 for(int k = 0; k < output.length; k++) System.out.printf("%8.5f ",output[k]);
                 System.out.println();
-                System.out.println(result);
+                System.out.println(result);*/
             }
         }
     }
@@ -157,6 +160,8 @@ public class Clas12TrackValidation {
         int ntracksValidated90 = counterList.get(4).integral();
         int ntracksValidated80 = counterList.get(5).integral();
         int unMatched = counterList.get(8).integral();
+        System.out.println("+-------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+");
+        System.out.println("+    charge   +   total   +  matched  +-----------+-----------+ unmatched + fraction  +-----------+");
         System.out.println("+-------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+");
         System.out.printf("|    negative | %9d | %9d | %9d | %9d | %9d | %9.6f | %9.6f |\n",
                 counterList.get(0).integral(),counterList.get(2).integral(),
@@ -315,18 +320,22 @@ public class Clas12TrackValidation {
         this.init(reader);
         Event event = new Event();
         int counter = 0;
+        ProgressPrintout printout = new ProgressPrintout();
         while(reader.hasNext()){
             counter++;
             reader.nextEvent(event);
             //processEvent(event);
             //System.out.println("--- # " + counter);
+            printout.updateStatus();
             processEventAnalyze(event);
             if(max>0&&counter>max) break;
         }
         
+        System.out.println("\n---------------------");
         System.out.println("FILE: " + filename);
         
         this.printStats();
+        System.out.println("\n");
         /*
         stats.show();
         finder.showStatistics();
@@ -356,6 +365,8 @@ public class Clas12TrackValidation {
         OptionParser parser = new OptionParser();
         parser.addOption("-dir","CLAS12DIR", "enviroment directory where network files are located");
         parser.addOption("-n","25000", "number of events to process");
+        parser.addOption("-run","5038", "run number");
+        parser.addRequired("-network", "network file name");
         parser.addOption("-h","false", "show histograms");
         
         
@@ -372,15 +383,21 @@ public class Clas12TrackValidation {
         int nEvents = parser.getOption("-n").intValue();
         String showHistograms = parser.getOption("-h").stringValue();
         String dir  = parser.getOption("-dir").stringValue();
+        String archive = parser.getOption("-network").stringValue();
         Clas12TrackValidation validation = null;
 
+        
+        validation = 
+                    new Clas12TrackValidation(archive,5038,"default");
+        /*
         if(dir.startsWith("null")==false){
             validation = 
                     new Clas12TrackValidation(dir);
         } else {
             validation = 
-                    new Clas12TrackValidation();
-        }
+                    new Clas12TrackValidation(archive,5038,"default");
+        }*/
+        
         if(showHistograms.compareTo("true")==0) validation.showHistogrmas(true);
         validation.processFile(filename,nEvents);
     }

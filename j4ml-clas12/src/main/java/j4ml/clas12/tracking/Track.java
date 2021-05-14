@@ -106,6 +106,21 @@ public class Track {
         return counter;
     }
     
+    public boolean match(Track trk){
+        if( Math.abs(trk.vector.mag()-this.vector.mag())/this.vector.mag() > 0.1) return false;
+        if( Math.abs(this.vector.theta()-trk.vector.theta())*57.29>10.0) return false;
+        if( Math.abs(this.vector.phi()-trk.vector.phi())*57.29>10.0) return false;
+        //if( Math.abs(this.vertex.z()-trk.vertex.z())>4.0) return false;
+        return true;
+    }
+    
+    public int findMatch(List<Track> tracks){
+        for(int i = 0; i < tracks.size(); i++){
+            if(this.match(tracks.get(i))==true) return i;
+        }
+        return -1;  
+    }
+    
     public boolean equals(int[] segments){
         for(int i = 0; i < this.clusters.length; i++){
             if(segments[i]>0){
@@ -127,6 +142,16 @@ public class Track {
         if(this.chi2>10) return false;
         if(vector.mag()<0.5||vector.mag()>10) return false;
         return true;
+    }
+    
+    public static List<Track> getValid(List<Track> tracks){
+        List<Track> valid = new ArrayList<>();
+        for(int i = 0; i < tracks.size(); i++){
+            if(tracks.get(i).isValid()){
+                valid.add(tracks.get(i));
+            }
+        }
+        return valid;
     }
     
     public static List<Track> getComplete(List<Track> tracks){

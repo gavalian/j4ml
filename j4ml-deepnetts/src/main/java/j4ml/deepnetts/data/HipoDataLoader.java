@@ -117,8 +117,7 @@ public class HipoDataLoader {
             Node  means = event.read(1001,4);
             Node  slopes = event.read(1001,5);
             Node  falseMeans = event.read(1001,8);
-            
-            
+                        
             //if(params.getShort(1)<0&&
             if(chi2.getFloat(0)<10.0
                     &&vertex.getFloat(2)>-15&&vertex.getFloat(2)<5){
@@ -197,6 +196,7 @@ public class HipoDataLoader {
         }*/
 
         dataset.setColumnNames(new String[]{"a","b","c","d","e","f","no","neg","pos"});
+        
         dataset.shuffle();
         return dataset;
     }
