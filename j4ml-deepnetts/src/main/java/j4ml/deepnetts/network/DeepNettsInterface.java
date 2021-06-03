@@ -46,6 +46,25 @@ public class DeepNettsInterface {
         }
     }
     
+    public static void trainRegression(String filename, String zipFileName, Integer run, NetworkFlavor flavor, int nepochs, int max, int charge){
+        String outputFile = String.format("network/%s/%s/trackParametersPositive.network", run.toString(), flavor.getName());
+        if(charge<0){
+            outputFile = String.format("network/%s/%s/trackParametersNegative.network", run.toString(), flavor.getName());
+        }
+        DeepNettsInterface.verifyFile(zipFileName, outputFile);
+        
+        DataSet inputData = HipoDataLoader.readParameterData(filename,charge, max);
+        inputData.shuffle();
+        
+        DeepNettsRegression regression = new DeepNettsRegression();
+        regression.init(new int[]{6,12,12,12,4});
+        
+        regression.train(inputData, nepochs);
+        List<String> networkStream = regression.getNetworkStream();
+        
+        ArchiveUtils.addInputStream(zipFileName, outputFile, networkStream);
+    }
+    
     public static void trainClassifier(String filename, String zipFileName, Integer run, NetworkFlavor flavor, int nepochs, int max, boolean balance){
         
         
@@ -110,7 +129,9 @@ public class DeepNettsInterface {
     public static void main(String[] args){
         //DeepNettsInterface.trainClassifierLSVM("dc_combined_sample_70k.lsvm","dc_combined_sample_70k_test.lsvm", 5000);        
         OptionStore store = new OptionStore("run-deepnetts.sh");
+        
         store.addCommand("-classifier", "train a classifier network");
+        store.addCommand("-regression", "train a regression network");
         store.addCommand("-fixer", "train a classifier network");      
         store.addCommand("-remove", "remove file from archive");
         store.addCommand("-list", "list files in the archive");
@@ -121,6 +142,15 @@ public class DeepNettsInterface {
         store.getOptionParser("-classifier").addRequired("-run","run number for the trained network");
         store.getOptionParser("-classifier").addRequired("-network","network filename");
         store.getOptionParser("-classifier").addOption("-flavor","default","flavor of the network");
+      
+
+        store.getOptionParser("-regression").addOption("-e", "240", "number of epochs to train");
+        store.getOptionParser("-regression").addOption("-max", "-1", "maximum number of samples to load");
+        store.getOptionParser("-regression").addRequired("-run","run number for the trained network");
+        store.getOptionParser("-regression").addRequired("-network","network filename");
+        store.getOptionParser("-regression").addOption("-flavor","default","flavor of the network");
+        store.getOptionParser("-regression").addOption("-charge","1","particle charge spieces");
+        
         
         store.getOptionParser("-fixer").addOption("-b", "false", "balance the data sample");
         store.getOptionParser("-fixer").addOption("-e", "240", "number of epochs to train");
@@ -166,6 +196,26 @@ public class DeepNettsInterface {
                 NetworkFlavor.showTypeList();
             } else {
                 DeepNettsInterface.trainClassifier(input.get(0), network, run, networkFlavor, epochs, max, balance);
+            }
+        }
+        
+        
+        if(store.getCommand().compareTo("-regression")==0){
+            List<String> input = store.getOptionParser("-regression").getInputList();
+            int          max   = store.getOptionParser("-regression").getOption("-max").intValue();
+            int       epochs   = store.getOptionParser("-regression").getOption("-e").intValue();
+            Integer      run   = store.getOptionParser("-regression").getOption("-run").intValue();
+            String   network   = store.getOptionParser("-regression").getOption("-network").stringValue();
+            String    flavor   = store.getOptionParser("-regression").getOption("-flavor").stringValue();
+            int       charge   = store.getOptionParser("-regression").getOption("-charge").intValue();
+            
+            NetworkFlavor   networkFlavor = NetworkFlavor.getType(flavor);
+            if(networkFlavor==NetworkFlavor.UNDEFINED){
+                System.out.println("ERROR: unknown flavor\n");
+                System.out.println("choose from the list below:");
+                NetworkFlavor.showTypeList();
+            } else {
+                DeepNettsInterface.trainRegression(input.get(0), network, run, networkFlavor, epochs, max, charge);
             }
         }
         

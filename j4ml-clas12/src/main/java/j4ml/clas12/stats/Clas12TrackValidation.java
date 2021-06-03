@@ -41,7 +41,7 @@ public class Clas12TrackValidation {
     
     boolean showHistograms = true;
     List<AxisCounter>  counterList = new ArrayList<>();
-    
+    AxisTable tableAngle = null;//new AxisTable(counterList);
     
     public Clas12TrackValidation(String archiveFile, int run, String flavor){
         //finder = Clas12TrackFinder.createEJML();    
@@ -84,6 +84,7 @@ public class Clas12TrackValidation {
         stats.addMetrics("negative (5 SL)");
         
         for(int i = 0 ; i < 12; i++ ) this.counterList.add(new AxisCounter(20,0.0,0.5));
+        this.tableAngle = new AxisTable(12,20,5.0,2.0);
     }
     
     public void processEventAnalyze(Event event){
@@ -111,15 +112,19 @@ public class Clas12TrackValidation {
             int[] clusters = validTracks.get(i).clusters;
              if(t.charge<0) {
                    counterList.get(0).fill(t.vector.mag());
+                   tableAngle.fill(0, t.vector.theta()*57.29);
                } else {
                    counterList.get(1).fill(t.vector.mag());
+                   tableAngle.fill(1, t.vector.theta()*57.29);
                }
              
             if(result.find(clusters)>=0){
                if(t.charge<0) {
                    counterList.get(2).fill(t.vector.mag());
+                   tableAngle.fill(2, t.vector.theta()*57.29);
                } else {
                    counterList.get(3).fill(t.vector.mag());
+                   tableAngle.fill(3, t.vector.theta()*57.29);
                }
             } else {
                 
@@ -129,18 +134,33 @@ public class Clas12TrackValidation {
                 if(t.charge<0){
                     if(output[1]>0.8){
                         counterList.get(5).fill(t.vector.mag());
-                        if(output[1]>0.9) counterList.get(4).fill(t.vector.mag());
+                        tableAngle.fill(5, t.vector.theta()*57.29);
+                        if(output[1]>0.9){
+                            tableAngle.fill(4, t.vector.theta()*57.29);
+                            counterList.get(4).fill(t.vector.mag());
+                        }
+                        
                     } else {
-                        if(output[1]<0.5) counterList.get(8).fill(t.vector.mag());
+                        if(output[1]<0.5) {
+                            counterList.get(8).fill(t.vector.mag());
+                            tableAngle.fill(8, t.vector.theta()*57.29);
+                        }
                     }
                     
                    
                 } else {                    
                     if(output[2]>0.8){
                         counterList.get(7).fill(t.vector.mag());
-                        if(output[2]>0.9) counterList.get(6).fill(t.vector.mag());
+                        tableAngle.fill(7, t.vector.theta()*57.29);
+                        if(output[2]>0.9){
+                            counterList.get(6).fill(t.vector.mag());
+                            tableAngle.fill(6, t.vector.theta()*57.29);
+                        }
                     } else {
-                        if(output[2]<0.5) counterList.get(9).fill(t.vector.mag());
+                        if(output[2]<0.5) {
+                            counterList.get(9).fill(t.vector.mag());
+                            tableAngle.fill(9, t.vector.theta()*57.29);
+                        }
                     }
                 }
                 /*System.out.println("------------------------------------");
@@ -330,6 +350,11 @@ public class Clas12TrackValidation {
             processEventAnalyze(event);
             if(max>0&&counter>max) break;
         }
+        
+        AxisTable table = new AxisTable(counterList);
+        table.show();
+        
+        tableAngle.show();
         
         System.out.println("\n---------------------");
         System.out.println("FILE: " + filename);

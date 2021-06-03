@@ -63,6 +63,7 @@ public class ZipReader {
         }
         return entryLines;
     }
+    
     protected String[] splitFilePath(String path){
         int position = path.lastIndexOf("/");
         if(position>0){
@@ -72,7 +73,26 @@ public class ZipReader {
         }
         return null;
     }
-    
+    public Set<String> getFileList(String zipFileName, String filter){
+        Set<String> entryLines = new HashSet<>();
+        try (FileInputStream fis = new FileInputStream(zipFileName);
+                BufferedInputStream bis = new BufferedInputStream(fis);
+                ZipInputStream stream = new ZipInputStream(bis)) {
+            
+            ZipEntry entry;
+            while ((entry = stream.getNextEntry()) != null) {
+                String[] path = this.splitFilePath(entry.getName());
+                boolean match = Pattern.matches(filter, path[0]);                
+                //System.out.println("entry -> [" + path[0] + "] [" + path[1] + 
+                //        " ], type = " + entry.isDirectory() + ", match = " + match);
+                if(match==true){                                        
+                    entryLines.add(entry.getName());
+                }
+            }
+        } catch (Exception e){
+        }
+        return entryLines;
+    }
     public Set<String> getDirectoryList(String zipFileName, String filter){
         
         Set<String> entryLines = new HashSet<>();

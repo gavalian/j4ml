@@ -22,6 +22,8 @@ public class AxisCounter {
         buffer = new int[bins]; axisStep = step; axisMin = min;
     }
         
+    public int getNBins(){ return buffer.length;}
+    
     public int getBin(double value){
         int index = -1;
         //return (int) (buffer.length*(value-axisMin)*axisStep);
@@ -29,6 +31,14 @@ public class AxisCounter {
             if(value> i*axisStep && value < (i+1)*axisStep) return i;
         }
         return index;
+    }
+    
+    public double axisValue(int bin){
+        return bin*axisStep + axisMin;
+    }
+    
+    public int getCounter(int bin){
+        return buffer[bin];
     }
     
     public void fill(double value){

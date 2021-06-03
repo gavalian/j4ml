@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.zip.ZipFile;
 
 /**
  *
@@ -36,12 +37,26 @@ public class ArchiveProvider {
         return reader.readTxt(this.archiveFile, path);
     }
     
+    public boolean hasFileForRun(int run, String path){
+        //ZipFile zipFile = null;
+        //reader.
+        int derivedRun = findEntry(run);
+        String filename = String.format("network/%d/%s/%s", derivedRun, this.flavor, path);
+        String filter   = String.format("network/%d/%s", derivedRun, this.flavor);
+        Set<String>  fileList = reader.getFileList(this.archiveFile, filter);
+        for(String entry : fileList){
+            System.out.println( entry + " " + (entry.compareTo(filename)==0));
+            if(entry.compareTo(filename)==0) return true;
+        }
+        return false;
+    }
+    
     public boolean hasFile(String filename, int run){
         int adjustedRun = findEntry(run);
         String path = String.format("network/%d/%s/%s", adjustedRun,flavor,filename);
         return true;
     }
-    
+        
     public Integer findEntry(int run){
         String         filter = String.format(".*/.*/%s", flavor);
         Set<String> directories = reader.getDirectoryList(archiveFile, filter);
@@ -66,8 +81,13 @@ public class ArchiveProvider {
     }
     
     public static void main(String[] args){
-        ArchiveProvider provider = new ArchiveProvider("../j4ml-deepnetts/ejmlclas12.network");
+        
+        ArchiveProvider provider = new ArchiveProvider("../j4ml-package/etc/ejmlclas12.network");
         int index = 0;
+        
+        
+        provider.hasFileForRun(5038, "trackParametersPositive.network");
+        /*
         index = provider.findEntry(5);
         System.out.println("RUN = " + index);
         index = provider.findEntry(1000);
@@ -89,6 +109,6 @@ public class ArchiveProvider {
         
         
         List<String> fileContent = provider.getFile("trackClassifier.network", 5060);
-        System.out.println("lines read = " + fileContent.size());
+        System.out.println("lines read = " + fileContent.size());*/
     }
 }

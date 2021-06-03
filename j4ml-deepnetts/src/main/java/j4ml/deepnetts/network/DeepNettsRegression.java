@@ -12,6 +12,7 @@ import deepnetts.net.loss.LossType;
 import deepnetts.net.train.BackpropagationTrainer;
 import deepnetts.net.train.opt.OptimizerType;
 import j4ml.deepnetts.data.DataSetReader;
+import java.util.ArrayList;
 import java.util.List;
 import javax.visrec.ml.data.DataSet;
 
@@ -55,6 +56,7 @@ public class DeepNettsRegression {
     }
     
     public FeedForwardNetwork getNetwork(){ return neuralNet;}
+    
     public void train(DataSet ds, int nEpochs){
         
         initTrainer();
@@ -65,6 +67,30 @@ public class DeepNettsRegression {
         
         System.out.println("accuracy = " + trainer.getTrainingAccuracy());
         System.out.println("loss = " + trainer.getTrainingLoss());
+    }
+    
+    public List<String>  getNetworkStream(){
+        List<String> stream = new ArrayList<String>();
+         int nLayers = neuralNet.getLayers().size();
+        for(int i = 1; i < nLayers; i++){
+            System.out.println(neuralNet.getLayers().get(i-1).getWidth()
+                    +","+neuralNet.getLayers().get(i).getWidth());
+            stream.add(neuralNet.getLayers().get(i-1).getWidth()
+                    +","+neuralNet.getLayers().get(i).getWidth());
+            //System.out.println(DataSetReader.getString(neuralNet.getLayers().get(i).getWeights().getValues(),","));
+            float[] weigths = neuralNet.getLayers().get(i).getWeights().getValues();
+            int     width   = neuralNet.getLayers().get(i).getWidth();
+            int     widthP  = neuralNet.getLayers().get(i-1).getWidth();
+            for(int k = 0; k < widthP; k++){
+                System.out.println(DataSetReader.getString(neuralNet.getLayers().get(i).getWeights().getValues(),
+                        k*width, width,","));
+                stream.add(DataSetReader.getString(neuralNet.getLayers().get(i).getWeights().getValues(),
+                        k*width, width,","));
+            }
+            //System.out.println(DataSetReader.getString(neuralNet.getLayers().get(i).getBiases(),","));
+            stream.add(DataSetReader.getString(neuralNet.getLayers().get(i).getBiases(),","));
+        }
+        return stream;
     }
     
     public static DataSet createDataSet(List<float[]> list){

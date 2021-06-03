@@ -20,4 +20,6 @@ public abstract class NeuralNetworkTracking {
     public abstract void classify(ClusterCombinations comb);
     public abstract void fix(ClusterCombinations comb);
     public abstract void evaluate(ClusterCombinations comb);
+    public abstract void applyParameters(ClusterCombinations comb);
+    
 }

@@ -5,7 +5,9 @@
  */
 package j4ml.clas12.tracking;
 
+import j4np.physics.Vector3;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,6 +15,10 @@ import java.util.List;
  * @author gavalian
  */
 public class ClusterCombinations {
+    
+    
+    public List<Vector3>  vectors = new ArrayList<>();
+    public List<Vector3>  vertex  = new ArrayList<>();
     
     //private final int BYTES_PER_ROW = 14*4;
     private final int BYTES_PER_ROW = 20*4;
@@ -33,6 +39,9 @@ public class ClusterCombinations {
         activeRow = ar;
         return this;
     }
+    
+    public List<Vector3>  getVectors(){ return this.vectors;}
+    public List<Vector3>  getVertex(){ return this.vertex;}
     
     public int getStatus(){
       int offset = activeRow*BYTES_PER_ROW + 4;

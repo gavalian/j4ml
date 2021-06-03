@@ -142,6 +142,23 @@ public class Clas12TrackFinder {
         //System.out.println(combinations.getString(false));
     }
     
+    
+    
+    public void readBank(ClusterStore cst, Bank bank, int sector){
+        cst.reset();
+        int nrows = bank.getRows();        
+        for(int i = 0; i < nrows; i++){
+            int sec = bank.getInt("sector", i);
+            if(sector==sec){
+                int id     = bank.getInt("id", i);
+                int superlayer = bank.getInt("superlayer", i);
+                double wire = bank.getFloat("avgWire", i);
+                double slope = bank.getFloat("fitSlope", i);
+                cst.add(superlayer-1, id, wire,slope);
+            }
+        }
+    }
+    
     public void process(Bank bank){
 
         resolvedTracks.reset();
@@ -201,10 +218,18 @@ public class Clas12TrackFinder {
         return this.resolvedTracks;
     }
     
+    public ClusterCombinations getCombinationsSix(){
+        return this.combinations;
+    }
+    
+    public ClusterCombinations getCombinationsFive(){
+        return this.combinations5;
+    }
+    
     public void analyze(){
         
     }
-        
+    
     /*private void evaluate(){
         int nsize = combinations.getSize();
         
