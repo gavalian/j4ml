@@ -408,12 +408,13 @@ public class Clas12TrackValidation {
         int nEvents = parser.getOption("-n").intValue();
         String showHistograms = parser.getOption("-h").stringValue();
         String dir  = parser.getOption("-dir").stringValue();
+        int runnum  = parser.getOption("-run").intValue();
         String archive = parser.getOption("-network").stringValue();
         Clas12TrackValidation validation = null;
 
         
         validation = 
-                    new Clas12TrackValidation(archive,5038,"default");
+                    new Clas12TrackValidation(archive,runnum,"default");
         /*
         if(dir.startsWith("null")==false){
             validation = 
