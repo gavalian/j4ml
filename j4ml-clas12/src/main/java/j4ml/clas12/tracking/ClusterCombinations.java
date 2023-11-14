@@ -479,6 +479,49 @@ public class ClusterCombinations {
         }
     }
     
+    private void analyzeChargeNuevo(int charge){
+        
+
+                
+        for(int i = 0; i < this.getSize(); i++){
+            setRow(i);
+            int      type = getStatus();
+            double   prob = getProbability();
+            
+            if(prob>0.5){
+                setStatus(charge*10+charge);
+            } else {
+                setStatus(-getStatus());
+            }
+            //if(getStatus()==type&&getProbability()>max){
+            //    max = getProbability();
+            //    index = i;
+            //}
+        }
+        /*
+        int index = getMaxItem(charge);
+        int  size = this.getSize();
+        int counter = 0;
+        
+        if(index>=0){
+            while(true){
+                //System.out.printf("step = %4d, index = %4d , probability %8.6f\n",counter,index,setRow(index).getProbability());
+                //System.out.println(this.toString());
+                counter++;
+                int[] ids = getLabels(index);
+                for(int i = 0; i < size; i++){
+                    setRow(i);
+                    if(i!=index&&contains(ids)==true&&(getStatus()==1||getStatus()==2)){
+                        setStatus(-getStatus());
+                    }
+                }
+                setRow(index).setStatus(charge*10+charge);
+                index = getMaxItem(charge);
+                if(index<0) break;
+                if(setRow(index).getProbability()<0.5) break;
+            }
+        }*/
+    }
     
     public void copyTo(ClusterCombinations comb, List<Integer> statusList){
         int nrows = this.getSize();
@@ -522,14 +565,20 @@ public class ClusterCombinations {
         
         if(indexPositive>=0) probabilityPositive = setRow(indexPositive).getProbability();
         if(indexNegative>=0) probabilityNegative = setRow(indexNegative).getProbability();
-        
         if(probabilityPositive>probabilityNegative){
+            analyzeChargeNuevo(2);
+            analyzeChargeNuevo(1);
+        } else {
+            analyzeChargeNuevo(1);
+            analyzeChargeNuevo(2);
+        }
+        /*if(probabilityPositive>probabilityNegative){
             analyzeCharge(2);
             analyzeCharge(1);
         } else {
             analyzeCharge(1);
             analyzeCharge(2);
-        }
+        }*/
     }
     
     public void getIterator(){

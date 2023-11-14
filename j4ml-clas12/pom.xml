@@ -4,7 +4,7 @@
 
     <groupId>j4ml</groupId>
     <artifactId>j4ml-clas12</artifactId>
-    <version>0.9-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -33,7 +33,7 @@
  <dependency>
         <groupId>j4ml</groupId>
         <artifactId>j4ml-utils</artifactId>
-        <version>0.9-SNAPSHOT</version>
+        <version>1.0</version>
       </dependency>
 
       <dependency>
@@ -45,7 +45,7 @@
       <dependency>
         <groupId>j4ml</groupId>
         <artifactId>j4ml-data</artifactId>
-        <version>0.9-SNAPSHOT</version>
+        <version>1.0</version>
       </dependency>
       
     </dependencies>

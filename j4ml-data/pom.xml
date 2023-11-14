@@ -4,7 +4,7 @@
 
     <groupId>j4ml</groupId>
     <artifactId>j4ml-data</artifactId>
-    <version>0.9-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <dependencies>
