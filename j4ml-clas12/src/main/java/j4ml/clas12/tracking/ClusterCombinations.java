@@ -284,7 +284,7 @@ public class ClusterCombinations {
     
     public final void add(int[] ids, double[] means){
         if(getSize()>440000){
-            System.out.println("no more : too many combinations......");
+            //System.out.println("no more : too many combinations......");
             return;
         }
         if(ids.length!=6||means.length!=6){
@@ -312,7 +312,7 @@ public class ClusterCombinations {
     
     public final void add(int[] ids, double[] means, double[] slopes){
         if(getSize()>440000){
-            System.out.println("no more : too many combinations......");
+            //System.out.println("no more : too many combinations......");
             return;
         }
         if(ids.length!=6||means.length!=6){
